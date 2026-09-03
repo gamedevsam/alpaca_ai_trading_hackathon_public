@@ -1,0 +1,5 @@
+{
+  "title": "Concepts",
+  "description": "Every term this product uses, defined in plain language.",
+  "pages": ["index", "managers", "sources", "blend", "target", "reconcile", "custodians", "ai-council", "predictions"]
+}

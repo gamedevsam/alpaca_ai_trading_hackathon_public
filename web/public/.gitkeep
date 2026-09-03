@@ -1,0 +1,5 @@
+# Intentionally tracked so this directory always exists in the Docker build context.
+# Both Dockerfile (in-image build, amd64 hosts) and Dockerfile.prebuilt (native
+# build, non-amd64 hosts) end with `COPY .../public ./public`, which fails the build
+# if this directory is absent. The site has no static public assets today (robots,
+# sitemap, and OG images are all app-router generated), so the dir is otherwise empty.

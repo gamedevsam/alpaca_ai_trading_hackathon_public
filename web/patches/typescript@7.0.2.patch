@@ -1,0 +1,92 @@
+diff --git a/lib/typescript.js b/lib/typescript.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..7652e01f9af5e0c8da07f51ec4bb3bc59415d4a2
+--- /dev/null
++++ b/lib/typescript.js
+@@ -0,0 +1,7 @@
++// Presence-check stub for tools (e.g. Next.js's build-time TypeScript setup) that verify
++// `typescript/lib/typescript.js` exists on disk and `require()` it directly by resolved path.
++// TS7 doesn't ship this file at all; see lib/version.cjs for why and what's bridged.
++// This package's package.json sets "type": "module", so this file (matched by that exact
++// literal path elsewhere) has to be real ESM, not CJS — Node's require(esm) support handles
++// a CJS caller requiring it synchronously.
++export * from "./version.cjs";
+diff --git a/lib/version.cjs b/lib/version.cjs
+index 4a054a048c0a127bcabf27d6f17feab4f72f1d4c..667eeecf9796acd81fe8acef6980fe0dde35ceee 100644
+--- a/lib/version.cjs
++++ b/lib/version.cjs
+@@ -1,3 +1,74 @@
+ const { version } = require("../package.json");
+ exports.version = version;
+ exports.versionMajorMinor = "7.0";
++
++// --- TS7 compatibility bridge ---------------------------------------------------------
++// TypeScript 7 (native/tsgo) removed the classic Compiler API. `require('typescript')` here
++// otherwise exports nothing but `version`/`versionMajorMinor`. This bridges only the exact
++// calls @nestjs/cli's default "tsc" builder makes (verified against
++// node_modules/@nestjs/cli/lib/compiler/{compiler.js,helpers/tsconfig-provider.js}), by
++// shelling out to the still-fully-functional `tsc` CLI instead of reimplementing the
++// compiler. Not a general Compiler API polyfill — @nestjs/cli's `--watch` mode and Next's
++// build-time type-check use a wider surface not covered here (Next's is handled separately
++// via `next.config.mjs`'s `typescript.ignoreBuildErrors`; `nest build --watch` is unused in
++// this repo's scripts). Path-alias rewriting in emitted output is NOT reimplemented here
++// either — build_server.mjs already runs `tsc-alias` as a separate post-build step, which
++// covers it regardless of which compiler produced the output.
++const { execFileSync } = require("node:child_process");
++const os = require("node:os");
++const path = require("node:path");
++
++function resolveTscBin() {
++  return path.join(__dirname, "..", "bin", "tsc");
++}
++
++exports.sys = {
++  newLine: os.EOL,
++  getCurrentDirectory: () => process.cwd(),
++};
++
++exports.getParsedCommandLineOfConfigFile = function getParsedCommandLineOfConfigFile(configFileName) {
++  const raw = execFileSync(process.execPath, [resolveTscBin(), "-p", configFileName, "--showConfig"], {
++    encoding: "utf8",
++  });
++  const parsed = JSON.parse(raw);
++  return {
++    options: { ...parsed.compilerOptions, configFilePath: path.resolve(configFileName) },
++    fileNames: parsed.files || [],
++    projectReferences: undefined,
++    errors: [],
++  };
++};
++
++exports.createProgram = function createProgram(rootNamesOrOptions) {
++  const options = rootNamesOrOptions && rootNamesOrOptions.options;
++  const configFilePath = options && options.configFilePath;
++  return {
++    emit() {
++      try {
++        execFileSync(process.execPath, [resolveTscBin(), "-p", configFilePath]);
++        return { diagnostics: [] };
++      } catch (error) {
++        const output = [error.stdout, error.stderr]
++          .filter(Boolean)
++          .map((buf) => buf.toString())
++          .join("\n");
++        return {
++          diagnostics: [{ messageText: `tsc -p ${configFilePath} failed:\n${output || error.message}` }],
++        };
++      }
++    },
++  };
++};
++
++exports.getPreEmitDiagnostics = function getPreEmitDiagnostics() {
++  return [];
++};
++
++exports.formatDiagnosticsWithColorAndContext = function formatDiagnosticsWithColorAndContext(diagnostics) {
++  return (
++    diagnostics
++      .map((diagnostic) => (typeof diagnostic.messageText === "string" ? diagnostic.messageText : JSON.stringify(diagnostic.messageText)))
++      .join("\n") + "\n"
++  );
++};

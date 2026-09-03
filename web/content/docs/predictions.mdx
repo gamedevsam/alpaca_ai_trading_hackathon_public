@@ -1,0 +1,102 @@
+---
+title: The prediction ledger
+description: Record what the people you follow actually claimed, grade it honestly, and let the results set how much you trust them.
+---
+
+You set a [trust weight](/docs/concepts/blend#trust-weights-how-much-each-source-counts)
+on every manager you follow. The prediction ledger is where that number stops being a
+feeling and starts being a record.
+
+It is a ledger of what people **actually said** — verbatim — and how it turned out. It
+covers the managers you track, and you.
+
+## Why bother
+
+Everyone remembers their good calls; almost nobody keeps score of the rest. The people
+you follow certainly aren't keeping score for you, and the vivid recent call is exactly
+the one your memory over-weights. If you're going to delegate any part of your allocation
+to someone else's judgment, you want their record, not your impression of it.
+
+## Logging a claim
+
+Open **Managers → Predictions** and log a prediction. Four fields carry the weight:
+
+- **The claim, verbatim.** In the speaker's words, as said. Not your summary of it.
+- **The falsifiable condition.** What would have to be true for this to count as right —
+  written by you, separately, and set _before_ the outcome is known.
+- **The claim type** (below).
+- **A horizon**, if there is one. Plenty of claims don't have a date; those stay open
+  until you rule on them.
+
+Keeping the claim and the condition apart is the design decision that makes the whole
+thing trustworthy. Nobody — not the manager, not you, not an AI — gets to soften a claim
+after the fact by rewriting what was "really" meant. The words stay put; the standard is
+explicit and set in advance.
+
+**Only published claims belong here.** If an AI assistant recalls a manager saying
+something, that's a lead to go verify, not a record to file. The ledger is a record of
+what was said, not of what was remembered.
+
+## Four claim types, scored separately
+
+| Type                      | Example                                                     |
+| ------------------------- | ----------------------------------------------------------- |
+| **Market timing**         | "We're early in the AI investment cycle."                   |
+| **Stock selection**       | "This name compounds at 20% a year."                        |
+| **Business fundamentals** | "Operating margin holds above 11% through the capex cycle." |
+| **Own behavior**          | "I'm concentrating into my highest-conviction ideas."       |
+
+They are never pooled into one number. Someone can be excellent at judging a business and
+hopeless at calling the market — and you're usually only borrowing one of those skills.
+
+## Resolving
+
+Claims with a horizon come **due** and land in a resolution queue rather than quietly
+expiring. Claims without one stay open and visible, still worth ruling on whenever the
+answer becomes obvious.
+
+**Nothing resolves itself.** The system never decides someone was right; it just makes
+sure the question comes back to you. When you rule, you record the outcome and, if you
+want, a note on what actually happened.
+
+If a manager later revises a claim, the new one **supersedes** the old, and both stay in
+the record.
+
+## Scorecards that refuse to flatter
+
+Per manager and per claim type, the ledger shows the record. With one deliberate rule:
+**below eight graded claims it shows counts, not percentages.** "3 of 4" is honest;
+"75%" from four data points is a number pretending to be evidence, and it would be the
+most quoted number in the product.
+
+Small samples aren't hidden — they're shown as what they are, and they grow into
+percentages once there's enough to say.
+
+## Zeitgeist
+
+The **Zeitgeist** view groups open predictions by theme across everyone you follow, so you
+can see where the people you trust agree and where they diverge — three managers all
+betting on the same cycle is a concentration risk you won't spot one profile at a time.
+
+Themes come from the tags you assign. It reports what you told it rather than inferring
+clusters, which means it can't quietly invent a consensus.
+
+## Doing this by talking
+
+Logging claims is transcription work, and your
+[connected AI assistant](/docs/mcp-assistant) can do it: hand it a transcript or a letter,
+have it pull out the falsifiable claims verbatim, review them, and let it file the batch.
+It can also work the resolution queue with you — but you rule on every outcome.
+
+<Cards>
+  <Card
+    title="Predictions — the concept"
+    description="The short definition, if you want it in one page"
+    href="/docs/concepts/predictions"
+  />
+  <Card
+    title="Sources & the Blend Workbench"
+    description="Where the trust weights this informs actually live"
+    href="/docs/sources-and-blend"
+  />
+</Cards>

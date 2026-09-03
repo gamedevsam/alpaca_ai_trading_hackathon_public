@@ -1,0 +1,116 @@
+{
+  "$id": "entity/alpaca/account_snapshot",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AlpacaAccountSnapshot",
+  "prefix": "AAS",
+  "type": "object",
+  "required": ["type", "header", "body"],
+  "properties": {
+    "type": { "const": "alpaca_account_snapshot" },
+    "header": {
+      "type": "object",
+      "required": ["owner_user_id", "environment", "captured_at"],
+      "properties": {
+        "owner_user_id": { "type": "string" },
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "captured_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "required": ["environment", "capturedAt", "account", "positions", "clock"],
+      "properties": {
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "account": {
+          "type": "object",
+          "required": ["cash", "buyingPower", "equity", "portfolioValue", "currency", "optionsBuyingPower"],
+          "properties": {
+            "cash": { "type": "number" },
+            "buyingPower": { "type": "number" },
+            "equity": { "type": "number" },
+            "portfolioValue": { "type": "number" },
+            "currency": { "type": "string" },
+            "optionsBuyingPower": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "positions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["symbol", "qty", "side", "avgEntryPrice", "marketValue", "unrealizedPl"],
+            "properties": {
+              "symbol": { "type": "string" },
+              "qty": { "type": "number" },
+              "side": { "type": "string", "enum": ["long", "short"] },
+              "avgEntryPrice": { "type": "number" },
+              "marketValue": { "type": "number" },
+              "unrealizedPl": { "type": "number" },
+              "instrument": {
+                "anyOf": [
+                  { "const": null },
+                  {
+                    "type": "object",
+                    "required": [
+                      "assetClass",
+                      "underlying",
+                      "occSymbol",
+                      "expiration",
+                      "strike",
+                      "right",
+                      "multiplier",
+                      "positionIntent"
+                    ],
+                    "properties": {
+                      "assetClass": { "const": "option" },
+                      "underlying": { "type": "string" },
+                      "occSymbol": { "type": "string" },
+                      "expiration": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                      "strike": { "type": "number" },
+                      "right": { "type": "string", "enum": ["call", "put"] },
+                      "multiplier": { "type": "number" },
+                      "positionIntent": {
+                        "type": "string",
+                        "enum": ["buy_to_open", "sell_to_open", "buy_to_close", "sell_to_close"]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "daysToExpiry": { "type": ["number", "null"] },
+              "delta": { "type": ["number", "null"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "clock": {
+          "anyOf": [
+            { "const": null },
+            {
+              "type": "object",
+              "required": ["isOpen"],
+              "properties": {
+                "isOpen": { "type": "boolean" },
+                "nextOpen": { "type": ["string", "null"] },
+                "nextClose": { "type": ["string", "null"] }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "id": { "$ref": "~/entity.json#/properties/id" },
+    "owner_id": { "$ref": "~/entity.json#/properties/owner_id" },
+    "external_id": { "$ref": "~/entity.json#/properties/external_id" },
+    "status": { "$ref": "~/entity.json#/properties/status" },
+    "schema_version": { "$ref": "~/entity.json#/properties/schema_version" },
+    "created_at": { "$ref": "~/entity.json#/properties/created_at" },
+    "updated_at": { "$ref": "~/entity.json#/properties/updated_at" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,27 @@
+# src/web is a SELF-CONTAINED project, deliberately isolated from the repo-root pnpm
+# workspace (which excludes it via `!src/web`). Having its own workspace file makes pnpm
+# treat this directory as an independent root: `pnpm install` here writes src/web/pnpm-lock.yaml
+# + src/web/node_modules, with no coupling to the app's Next/React versions. The Docker build
+# (src/web/Dockerfile) and `pnpm deploy_web` operate on this directory alone.
+packages: []
+
+# TypeScript 7 (native/tsgo) dropped `lib/typescript.js` and the classic Compiler API.
+# Next's build-time TS setup presence-checks that file and require()s it, so without this it
+# thinks TypeScript is uninstalled and tries to auto-install it mid-build (fails offline in
+# Docker). This patch restores a presence stub + a thin Compiler-API bridge. Same patch the
+# repo-root workspace applies; kept as its own copy here since src/web is install-isolated.
+patchedDependencies:
+  typescript@7.0.2: patches/typescript@7.0.2.patch
+
+# Allow the native postinstall builds this stack needs (pnpm blocks build scripts by default).
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+allowBuilds:
+  '@tailwindcss/oxide': true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

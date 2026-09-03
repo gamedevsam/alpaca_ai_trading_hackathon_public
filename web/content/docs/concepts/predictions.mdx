@@ -1,0 +1,77 @@
+---
+title: Predictions
+description: A ledger of what managers actually said, graded honestly against what actually happened.
+---
+
+**A prediction is a claim someone made, recorded word-for-word.** A manager on a call, a
+newsletter writer, or you in a moment of conviction. The ledger keeps it, and later you
+rule on how it turned out.
+
+## Why this exists
+
+Everyone remembers their good calls. Nobody keeps score of the rest — and the people you
+follow have no obligation to either. That leaves you allocating trust on the basis of
+recent vividness, which is the worst available criterion.
+
+A written record fixes that. Not to catch anyone out, but so that your
+[trust weights](/docs/concepts/blend#trust-weights-how-much-each-source-counts) have
+something behind them.
+
+## The claim and its grading are kept apart
+
+This is the design decision that makes the ledger trustworthy, and it's worth
+understanding:
+
+- **The claim** is stored verbatim, in the speaker's own words, exactly as said.
+- **The falsifiable condition** — what would have to be true for it to count as right —
+  is written separately, by you.
+
+Keeping them apart means nobody gets to soften a claim after the fact by rewriting what
+"really" was meant. The words stay put; the standard is explicit and set in advance.
+
+Only claims someone actually published belong in the ledger. Something an AI recalls a
+manager saying is a lead to go check, not a record.
+
+## Four kinds of claim, never averaged together
+
+A prediction is one of four types, and they are scored separately:
+
+| Type                      | Example                                                     |
+| ------------------------- | ----------------------------------------------------------- |
+| **Market timing**         | "We're early in the AI investment cycle."                   |
+| **Stock selection**       | "This name compounds at 20% a year."                        |
+| **Business fundamentals** | "Operating margin holds above 11% through the capex cycle." |
+| **Own behavior**          | "I'm concentrating into my highest-conviction ideas."       |
+
+Pooling them would produce a meaningless number. Someone can be excellent at judging a
+business and hopeless at calling the market, and you need to know _which_, because you're
+only borrowing one of those skills.
+
+## Nothing resolves itself
+
+Predictions come **due** when their horizon arrives — you get a resolution queue rather
+than a silent expiry — and claims with no fixed date stay open until you rule on them.
+The system never decides that someone was right. Judging the outcome is yours; the ledger
+just makes sure the question comes back to you.
+
+## Scorecards that refuse to flatter
+
+Per manager and per claim type, the scorecard shows the record. With one deliberate rule:
+**below eight graded claims it shows counts, not percentages.** "3 of 4" is honest; "75%"
+from four data points is a number pretending to be evidence.
+
+## Zeitgeist
+
+Alongside the per-manager view, the **zeitgeist** groups open predictions by theme across
+everyone you follow — so you can see at a glance where the people you trust agree and
+where they diverge. It uses the theme tags you assigned, not inferred clustering: it
+reports what you told it.
+
+<Cards>
+  <Card
+    title="Using the prediction ledger"
+    description="Logging claims, setting conditions, resolving outcomes"
+    href="/docs/predictions"
+  />
+  <Card title="Managers" description="The people whose claims you're tracking" href="/docs/concepts/managers" />
+</Cards>

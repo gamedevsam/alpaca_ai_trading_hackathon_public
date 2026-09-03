@@ -1,0 +1,89 @@
+---
+title: Connect your AI assistant (MCP)
+description: Work your portfolio by talking — your own assistant reads it, records what you tell it, and proposes. It cannot trade.
+---
+
+The app isn't the only way in. **MCP** — the Model Context Protocol, the open standard AI
+assistants use to reach outside tools — lets the assistant you already use connect
+directly to your account and work alongside you.
+
+This is the surface for getting things _in_. Transcribing a manager's book, anchoring
+eighty positions, filing a dozen claims from a transcript: all of it is typing, and none
+of it should be yours to do. You describe what you want; it does the work and reports
+back; you approve.
+
+The app remains where you _look_ — the dashboard view, the charts, and the place to tweak
+one thing in context while you're staring at the data.
+
+## What it can do for you
+
+- **Read your state** — holdings, [sources](/docs/concepts/sources) and their snapshots,
+  the [target](/docs/concepts/target), freshness and provenance: the same facts the app
+  shows you.
+- **Record what you tell it** — a manager's new disclosure as a dated snapshot, a
+  correction to one you got wrong, the trades a manager disclosed, a claim for the
+  [prediction ledger](/docs/predictions).
+- **Do the batch work** — propose [conviction custodians](/docs/concepts/custodians) for
+  your whole book with per-position reasoning, then apply the batch once you've approved
+  it in conversation.
+- **Raise flags** — orphaned positions, stale sources, drift against your target, brought
+  to you where you already are.
+
+## What it can never do
+
+**The tools to trade, move money, or touch a brokerage account do not exist on this
+surface.** Not as an instruction the assistant is asked to respect — as tools that aren't
+there to call. It cannot place an order, approve a proposal on your behalf, or change
+your holdings.
+
+There's a second boundary worth stating, because it's the one that actually matters day
+to day: the assistant **executes decisions you state**, it does not infer decisions you
+haven't. It will happily anchor thirty positions the way you just described. It will not
+decide which manager deserves credit for a position, or what you believe about a company,
+and each surface publishes its own list of things it will never do.
+
+## Connecting one
+
+Two connectors are available, and they don't overlap — most people want both.
+
+**Portfolio Manager** — everything about your book and the managers you follow: sources,
+snapshots, corrections, the copyable book, custodians, orphans, fidelity, blends and
+targets, predictions. Its endpoint ends in `/manager/mcp`:
+
+<p className="break-all">`https://stocks.dataconnector-pro.com/api/v1/manager/mcp`</p>
+
+**Market analytics** — ticker-level research: fundamentals and estimates, snapshots,
+comparisons, discounted-cash-flow scenarios, screening. Its endpoint ends in
+`/chatgpt/mcp`:
+
+<p className="break-all">`https://stocks.dataconnector-pro.com/api/v1/chatgpt/mcp`</p>
+
+In your assistant's connector settings, add a custom connector pointing at the full URL.
+Registration and sign-in are automatic — the connection uses standard OAuth with
+per-client registration and PKCE, so there's no client id to copy and no API key to paste
+into a chat window.
+
+Once connected, a good first message is simply asking the assistant to describe the
+surface. It reports who it's authenticated as and what it can actually do, from the live
+tool list — so it orients itself instead of guessing.
+
+## Connected as you, and logged
+
+Your assistant authenticates **as you**, with a token scoped to exactly the tool surface
+you approved and nothing more. There's no shared service account.
+
+Every write it makes is recorded as an activity event you can review in the app, so
+"what did the AI change while I was asleep?" has a complete answer.
+
+<Cards>
+  <Card
+    title="Conviction custodians"
+    description="The batch job that shows off why this surface exists"
+    href="/docs/concepts/custodians"
+  />
+  <Card
+    title="The AI Council"
+    description="The other AI surface — a debating panel inside the app"
+    href="/docs/ai-council"
+  />
+</Cards>

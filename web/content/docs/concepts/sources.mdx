@@ -1,0 +1,78 @@
+---
+title: Sources
+description: The reference portfolios that feed your plan — dated, attributed, and honest about how old they are.
+---
+
+**A source is a reference portfolio that can feed your plan.** Three kinds exist, and
+they behave identically:
+
+- a [manager](/docs/concepts/managers) you track,
+- **your own strategy** — the book you'd hold if you were starting today, written down
+  deliberately rather than inherited by accident,
+- an **AI sleeve** — a portfolio proposed by the AI, kept separate so you can watch it
+  before you trust it.
+
+**Sources are inputs, not accounts.** Your real brokerage holdings live under
+_Portfolios_; a source is something you're considering, not something you own. Keeping
+them apart is what makes it possible to ask the one question that matters:
+_how far is what I own from what I meant to own?_
+
+## Snapshots are dated and append-only
+
+A **snapshot** is one dated record of what a source held on a given day: the positions,
+their weights or share counts, and a note about which disclosure it came from
+("Manager snapshot, July 2026", "Weekly member update + portfolio sheet").
+
+Snapshots are **append-only**. Recording a new one never overwrites the last, so the
+history is a real history — you can compare any two dates and see what moved. If you
+recorded something wrong, you file a _correction_, which supersedes the original while
+leaving the record of both. Nothing quietly rewrites the past.
+
+This is what makes the questions in the next paragraph answerable at all. A diff between
+two snapshots shows entries, exits, adds and trims — and, next to them, any trades the
+manager actually disclosed. When a position vanishes and no disclosure accounts for it,
+that gap is visible instead of invisible.
+
+## Provenance: where a number came from
+
+Every position carries **provenance** — the kind of evidence behind it:
+
+| Provenance                   | What it means                                                        |
+| ---------------------------- | -------------------------------------------------------------------- |
+| **Filing**                   | A regulatory disclosure. The strongest evidence there is.            |
+| **Interview / video / post** | The manager said it publicly, but it isn't audited.                  |
+| **Inference**                | Someone (you, or an AI) concluded it. Weakest — and labeled as such. |
+
+Provenance travels with the number for the rest of its life. Downstream, a figure from a
+dated filing and a figure inferred from an offhand comment are never treated as equally
+solid, and you can always see which one you're looking at.
+
+## Freshness: how old is this?
+
+Every source view shows how old its data is, and the label is **computed, not typed in**:
+recent data reads as current, older data as stale, and data past the cadence that source
+promised reads as overdue.
+
+Staleness isn't buried in a tooltip — it appears wherever the source's numbers are used.
+A plan built on a six-month-old disclosure tells you it's built on a six-month-old
+disclosure. If a source has never told the system how often it publishes, it is never
+labeled fresh, because nothing has earned that label.
+
+## Identity: one company, one line
+
+Managers name things the way they talk, not the way exchanges list them — "Mainstreet",
+"Topicus", a name that trades under a different ticker in your country. The **instrument
+aliases** panel on the Sources page lets you confirm those mappings once, and from then
+on the same company stops showing up as two different positions in your plan.
+
+The system will surface names it couldn't resolve and ask; it will not guess a mapping on
+your behalf. A wrong ticker is worse than an unresolved one.
+
+<Cards>
+  <Card
+    title="How to use sources"
+    description="Record a manager's book, add snapshots, and feed them into a plan"
+    href="/docs/sources-and-blend"
+  />
+  <Card title="Blend" description="Turning several sources into one plan you control" href="/docs/concepts/blend" />
+</Cards>

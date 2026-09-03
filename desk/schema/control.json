@@ -1,0 +1,83 @@
+{
+  "$id": "entity/alpaca/control",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AlpacaControl",
+  "prefix": "ACT",
+  "type": "object",
+  "required": ["type", "header", "body"],
+  "properties": {
+    "type": { "const": "alpaca_control" },
+    "header": {
+      "type": "object",
+      "required": ["owner_user_id", "environment", "status"],
+      "properties": {
+        "owner_user_id": { "type": "string" },
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "status": { "type": "string", "enum": ["armed", "disarmed", "killed"] }
+      },
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "required": ["environment", "killState", "mode", "limits"],
+      "properties": {
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "killState": { "type": "string", "enum": ["armed", "disarmed", "killed"] },
+        "mode": { "type": "string", "enum": ["dry_run", "paper", "live"] },
+        "liveArmed": { "type": "boolean" },
+        "executionGate": { "type": "string", "enum": ["per_action", "fully_autonomous"] },
+        "limits": {
+          "type": "object",
+          "required": [
+            "maxNotionalPerOrder",
+            "maxPositionPct",
+            "maxOrdersPerDay",
+            "maxDailyNotional",
+            "symbolAllowList",
+            "symbolDenyList",
+            "optionsEnabled",
+            "cooldownAfterFailureMs",
+            "maxContractsPerOrder",
+            "maxContractsPerUnderlying",
+            "maxShortCallCoveredPct",
+            "minDaysToExpiry",
+            "maxDaysToExpiry",
+            "requireOtm",
+            "minStrikeVsCostBasisPct",
+            "maxAbsDelta",
+            "earningsBlackoutDays"
+          ],
+          "properties": {
+            "maxNotionalPerOrder": { "type": ["number", "null"] },
+            "maxPositionPct": { "type": ["number", "null"] },
+            "maxOrdersPerDay": { "type": ["number", "null"] },
+            "maxDailyNotional": { "type": ["number", "null"] },
+            "symbolAllowList": { "type": "array", "items": { "type": "string" } },
+            "symbolDenyList": { "type": "array", "items": { "type": "string" } },
+            "optionsEnabled": { "type": "boolean" },
+            "cooldownAfterFailureMs": { "type": ["number", "null"] },
+            "maxContractsPerOrder": { "type": ["number", "null"] },
+            "maxContractsPerUnderlying": { "type": ["number", "null"] },
+            "maxShortCallCoveredPct": { "type": ["number", "null"] },
+            "minDaysToExpiry": { "type": ["number", "null"] },
+            "maxDaysToExpiry": { "type": ["number", "null"] },
+            "requireOtm": { "type": "boolean" },
+            "minStrikeVsCostBasisPct": { "type": ["number", "null"] },
+            "maxAbsDelta": { "type": ["number", "null"] },
+            "earningsBlackoutDays": { "type": ["number", "null"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "id": { "$ref": "~/entity.json#/properties/id" },
+    "owner_id": { "$ref": "~/entity.json#/properties/owner_id" },
+    "external_id": { "$ref": "~/entity.json#/properties/external_id" },
+    "status": { "$ref": "~/entity.json#/properties/status" },
+    "schema_version": { "$ref": "~/entity.json#/properties/schema_version" },
+    "created_at": { "$ref": "~/entity.json#/properties/created_at" },
+    "updated_at": { "$ref": "~/entity.json#/properties/updated_at" }
+  },
+  "additionalProperties": false
+}

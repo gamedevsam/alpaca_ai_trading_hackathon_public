@@ -1,0 +1,173 @@
+---
+title: Sources & the Blend Workbench
+description: The full workflow — record the books you follow, weight them by trust, get an explainable target, and measure your real account against it.
+---
+
+This is the heart of the product: the path from _"here are some investors I rate"_ to
+_"here are the four trades I should make this month, and here's why."_
+
+Four pages in the app, in order: **Sources** → **Blend** → **Target** → **Reconcile**.
+The **Workbench** is all four at once, live.
+
+New to the vocabulary? Every bolded term links to its definition; the
+[glossary](/docs/concepts) has them in one place.
+
+---
+
+## Step 1 — Record the books you follow
+
+Most portfolio tools only know about _your_ portfolio. But if you invest by studying
+people, their books are data too. **[Sources](/docs/concepts/sources)** make them
+first-class.
+
+A source is any reference portfolio that can feed your plan:
+
+- a **[tracked manager](/docs/concepts/managers)** — someone whose disclosures you follow,
+- **your own strategy** — the book you'd hold if you were starting from scratch today,
+- an **AI sleeve** — a portfolio the AI proposes, kept visibly separate until it earns
+  trust.
+
+Sources are _inputs_. Your actual brokerage holdings live under **Portfolio**, and the
+whole point of keeping them apart is being able to compare the two.
+
+### What to record, and what it buys you
+
+For each source: the positions and their weights, the date, and where the information
+came from. That last part matters more than it sounds.
+
+- **[Snapshots](/docs/concepts/sources#snapshots-are-dated-and-append-only) are dated and
+  append-only.** A new disclosure adds to the history; it never overwrites it. So you can
+  compare any two dates and see entries, exits, adds and trims — next to any trades the
+  manager actually disclosed. When a position vanishes with no disclosure to account for
+  it, that gap is visible rather than invisible.
+- **Got something wrong?** File a correction. It supersedes the original and both stay on
+  the record. Nothing silently rewrites history.
+- **[Provenance](/docs/concepts/sources#provenance-where-a-number-came-from) travels with
+  every number** — filing, interview, video, or inference — so a figure from an audited
+  disclosure is never quietly treated as equal to one someone deduced.
+- **[Freshness](/docs/concepts/sources#freshness-how-old-is-this) is computed, not typed.**
+  Tell the app how often a manager publishes and it will tell you when they're overdue. A
+  source that never declared a cadence is never labeled fresh.
+
+### One company, one line
+
+Managers name things the way they speak — a company's common name, a listing that trades
+under a different ticker where you live. The **instrument aliases** panel on the Sources
+page lets you confirm those mappings once, so the same company stops appearing as two
+positions. Unresolved names are surfaced for you to confirm; the system won't invent a
+mapping.
+
+### Doing this without the typing
+
+Transcribing a manager's book by hand is exactly the drudgery this product exists to
+remove. [Connect your AI assistant](/docs/mcp-assistant) and hand it the disclosure —
+it records the snapshot, with provenance, under your account, and tells you what it did.
+
+---
+
+## Step 2 — Weight them by trust
+
+Open the **Blend designer**. A **[blend](/docs/concepts/blend)** is your recipe: how much
+each source counts, plus the rules the engine follows.
+
+**Trust weights** are the first half. They normalize to 100%, so 40/20/20/20 means what
+it looks like. This is the difference between following someone and copying them: hold a
+new manager at 10% while you make up your mind, keep one at 0% to stay informed without
+letting them into the plan, and raise a weight when their
+[scorecard](/docs/predictions) has earned it.
+
+**Construction rules** are the second half — the constraints you'd otherwise re-apply by
+hand every single time:
+
+| Rule                  | What it's for                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Exclusions**        | Names you'll never hold — with a reason, and an explicit instruction for where the money goes: redistributed, moved to cash, or substituted with another ticker. |
+| **Position caps**     | A ceiling on any single position, a floor below which a line isn't worth holding, and a minimum trade size.                                                      |
+| **Overlap amplifier** | Count it for extra when several sources independently hold the same name. Off by default, capped when on.                                                        |
+| **Account rules**     | Placement hints (this belongs in the tax-advantaged account) and holdings to preserve untouched.                                                                 |
+| **Accessibility**     | Tickers you genuinely can't trade, removed with everything renormalized around them.                                                                             |
+| **Normalization**     | How much of the portfolio is invested at all — 96% invested means a deliberate 4% cash reserve.                                                                  |
+
+The instruction on an exclusion is worth dwelling on. If a manager holds 5% cash as a
+deliberate defense and you exclude that line without saying "send it to cash", the money
+lands in equities and you've quietly discarded the defensive part of their strategy. The
+choice is explicit because getting it wrong is silent.
+
+Every save is **versioned** with a timestamp and restorable, so your allocation policy is
+auditable months later.
+
+---
+
+## Step 3 — Read the target
+
+The **[target](/docs/concepts/target)** is what the blend produces: holdings and weights,
+a cash reserve, and the names your rules excluded with your reasons attached.
+
+It is **explainable by construction**. Open any line and you see which sources contributed
+it and how much each contributed. "Why does the plan hold 9.5% of this?" always has an
+answer, and the answer is made of your own decisions.
+
+The page distinguishes a **live preview** (regenerated from your current blend, not saved)
+from a **saved snapshot** (kept, named, timestamped). Reconcile against a saved one, so
+you're comparing against a plan that holds still.
+
+It also shows
+**[effective bets](/docs/concepts/target#effective-bets-how-many-bets-are-you-really-making)**:
+your position count after names that move together are collapsed into one bet, using the
+correlation groups you declared. Twenty-eight names can be twenty-three bets, with the
+largest single bet at 30% of the book — a number a position count will never show you.
+
+---
+
+## Step 4 — Measure reality against it
+
+Open **[Reconcile](/docs/concepts/reconcile)**, pick a saved target and one account.
+
+You get the drift, position by position, and the **trade plan** that closes it: buys,
+sells, sizes, and the net cash implication. Export to CSV or print, and run it at your
+broker. Nothing here places an order.
+
+Reconcile runs against **one account at a time**, deliberately: a target expressed in
+percentages only means something against a specific pot of money.
+
+### And the questions underneath
+
+The same page answers _why do I own this?_ for every position:
+
+- **[Conviction custodians](/docs/concepts/custodians)** — anchor each position to its
+  reason: a source, your own thesis, or the system. Right after an import, everything is
+  unanchored; that's setup, not an alarm.
+- **[Orphans](/docs/concepts/custodians#orphans-positions-with-no-reason-left)** —
+  positions no longer backed by anyone's conviction, e.g. the name a manager exited while
+  you kept holding. The report flags; it never acts.
+- **[Copy fidelity](/docs/concepts/custodians#copy-fidelity-are-you-actually-following-them)**
+  — how faithfully you're actually tracking a manager, measured against what you could
+  realistically have bought.
+- **Scope** — cash and deliberately off-strategy holdings can be declared out of scope, and
+  are named and counted rather than silently skipped.
+
+---
+
+## The Workbench: all of it at once
+
+The **Workbench** page collapses steps 2–4 into a single live view. Drag a source's weight
+and the target, the drift against your chosen account, and the trade blotter all redraw
+together. Nothing is saved until you save a target — so the cost of asking "what if I
+halved this manager?" is zero.
+
+Use the focused pages when you're editing carefully; use the Workbench when you're
+exploring.
+
+<Cards>
+  <Card
+    title="Concepts & glossary"
+    description="Sources, blend, target, reconcile, custodians — defined"
+    href="/docs/concepts"
+  />
+  <Card title="The prediction ledger" description="Earn the trust weights you set in step 2" href="/docs/predictions" />
+  <Card
+    title="Connect your AI assistant"
+    description="Have it do the recording and the batch work"
+    href="/docs/mcp-assistant"
+  />
+</Cards>

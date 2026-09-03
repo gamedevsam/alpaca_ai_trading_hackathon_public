@@ -1,0 +1,29 @@
+# Public web presence (src/web) — PREBUILT variant: consumes a host-built .next/standalone
+# instead of building in-image. Used by scripts/docker_build.mjs on non-amd64 hosts, where the
+# in-image `pnpm install` + `next build` run under QEMU x86_64 emulation and take 30+ minutes
+# (the same reason the main app pre-builds its client natively — see repo commit 9e199de).
+# The standalone bundle is arch-independent JS/WASM: no next/image → the optimizer is disabled
+# (next.config.mjs images.unoptimized), so sharp's platform .node binary is never loaded.
+#
+# Keep the runner stage in lockstep with Dockerfile's runner — same user, env, ports, CMD.
+# Context filtering comes from Dockerfile.prebuilt.dockerignore (BuildKit per-Dockerfile
+# ignore), which must admit .next/standalone and .next/static.
+ARG NODE_VERSION=24.14.0
+
+FROM node:${NODE_VERSION}-alpine AS runner
+RUN apk add --no-cache libc6-compat
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+WORKDIR /app
+RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs
+# These COPYs fail the build loudly if the host pre-build didn't run — nothing can ship empty.
+COPY --chown=nextjs:nodejs .next/standalone ./
+COPY --chown=nextjs:nodejs .next/static ./.next/static
+COPY --chown=nextjs:nodejs public ./public
+# Written by scripts/docker_build.mjs on the host before this build ran — /version reads it.
+COPY --chown=nextjs:nodejs version.json ./version.json
+USER nextjs
+EXPOSE 3000
+CMD ["node", "server.js"]

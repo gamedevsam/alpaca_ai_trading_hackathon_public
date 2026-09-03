@@ -1,0 +1,71 @@
+---
+title: Managers
+description: The investors whose portfolios you follow — turned from scattered videos and filings into data you can actually use.
+---
+
+**A manager is an investor whose portfolio you follow.** A fund manager who publishes
+filings, a YouTube investor who screenshots their book every month, a newsletter writer,
+a friend whose picks you respect. In this product, a tracked manager is a kind of
+[Source](/docs/concepts/sources) — a reference portfolio that can feed your plan.
+
+## The problem this solves
+
+If you invest by studying people, your research already exists — it's just scattered.
+It's in a video from three weeks ago, a filing from last quarter, a PDF you downloaded
+and lost, a note in your phone. You end up asking yourself questions you can't answer:
+
+- _Did they actually still hold that when I bought it?_
+- _How much of my book is really riding on one person's thinking?_
+- _They stopped mentioning that name six months ago — did they sell?_
+
+A spreadsheet doesn't answer those, because a spreadsheet has no memory of _when_ you
+wrote each row down or _where_ you got it.
+
+## What tracking a manager does for you
+
+Once a manager is in the system as a source, you get four things you didn't have:
+
+1. **A dated history.** Every disclosure you record becomes a
+   [snapshot](/docs/concepts/sources#snapshots-are-dated-and-append-only), so you can see
+   what they held _when_ — and what changed between any two dates.
+2. **A trust dial.** You decide how much each manager counts toward your plan with a
+   [trust weight](/docs/concepts/blend#trust-weights-how-much-each-source-counts).
+   Following someone no longer means copying them wholesale.
+3. **An honest freshness label.** Their book is stamped with how old it is, everywhere it
+   is used, so you never quietly act on stale information.
+4. **A scoreboard.** What they _said_ — not just what they held — can be recorded as a
+   [prediction](/docs/concepts/predictions) and graded when the outcome is known.
+
+## What the app calls things
+
+In the app, the **Managers** section of the navigation holds two pages:
+
+- **Sources** — the managers you follow, plus your own strategy book and any AI sleeve.
+  Each card shows how old the data is, how many holdings it has, what disclosure it came
+  from, its trust weight and status (active, trial, or just watching), and how often that
+  manager publishes.
+- **Predictions** — the ledger of what those managers claimed, and how it turned out.
+
+A manager card that says _"as of 19 days ago · overdue"_ is telling you something real:
+this person publishes weekly and you haven't recorded anything in almost three weeks.
+
+## What this deliberately is not
+
+Tracking a manager does **not** connect to their accounts, scrape their broker, or
+receive anything automatically. You (or your AI assistant, on your instruction) record
+what they disclosed publicly. That means the data is exactly as good as the disclosure —
+which is why every number carries its
+[provenance](/docs/concepts/sources#provenance-where-a-number-came-from) and its age.
+
+<Cards>
+  <Card
+    title="How to track a manager"
+    description="The full guide: recording books, snapshots, and provenance"
+    href="/docs/sources-and-blend"
+  />
+  <Card
+    title="Predictions"
+    description="Scoring what a manager said, not just what they held"
+    href="/docs/predictions"
+  />
+</Cards>

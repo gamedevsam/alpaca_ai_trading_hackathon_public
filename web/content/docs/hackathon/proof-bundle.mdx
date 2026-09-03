@@ -1,0 +1,109 @@
+---
+title: The proof bundle
+description: Every order MANDATE places carries a complete record of the rules it was measured against, the command that sent it, and what the broker said back. This is a real one.
+---
+
+A **proof bundle** is not a log line. It is the record an order carries with it, written as
+the order happens, kept for as long as the order exists. It exists so that "the desk obeyed
+its mandate" is something you can check rather than something we assert.
+
+Every bundle answers five questions:
+
+| Question | Where the answer lives |
+| --- | --- |
+| What was proposed, and **why**? | `symbol`, `instrument`, `qty`, `limitPrice`, `rationale` |
+| Which rules was it measured against, and **how did each one score**? | `clearedLimits` — all 21, pass *and* fail, with the numbers |
+| **Who** let it through, and when? | `events` — one timestamped entry per state change |
+| What **exactly** was sent to the broker? | `execution.dryRun.command`, `execution.submit.command` |
+| What did the broker **actually say**? | `execution.submit.response`, verbatim |
+
+## A real one
+
+This is the first order MANDATE placed with no human click: a cash-secured put on QQQ,
+submitted through the Alpaca CLI on 3 September 2026.
+
+**The order**
+
+```
+QQQ260904P00701000   sell to open   1 contract   limit $1.06   day
+```
+
+**The event trail** — every state change, in order, as stored:
+
+```
+09:22:26.583  draft      Action drafted from proposal request.
+09:22:26.583  proposed   All deterministic pre-checks cleared —
+                         awaiting human approval.
+09:22:26.714  approved   Auto-approved: control.executionGate=fully_autonomous
+                         (paper, kill switch armed) — no human click.
+09:22:26.911  submitted  Order submitted to broker via the Alpaca CLI v0.0.14
+                         (client_order_id=alpaca-paper-AAC_dackrmjhhxx002gjmghg,
+                          order_id=38a78630-a7ae-487e-917c-91afa9d9e127).
+09:22:26.998  submitted  Still resting at the broker (accepted) —
+                         account snapshot refreshed.
+18:13:33.228  canceled   Broker reported the order canceled.
+```
+
+Note the third line. The desk approved its own proposal — and it says so, names the setting
+that permitted it, and records that the kill switch was armed at the time. An autonomous
+action that hides that it was autonomous would defeat the entire exercise.
+
+**The command actually run** — dry-run first, then the same command without the flag:
+
+```bash
+alpaca order submit \
+  --symbol QQQ260904P00701000 --side sell --type limit --time-in-force day \
+  --qty 1 --limit-price 1.06 --position-intent sell_to_open \
+  --client-order-id alpaca-paper-AAC_dackrmjhhxx002gjmghg --quiet --dry-run
+```
+
+The `client-order-id` is derived from the action's own id. That is what makes submission
+idempotent: if the process dies between sending and recording, the retry cannot open a
+second position.
+
+**The broker's reply**, stored verbatim — `status: accepted`, `asset_class: us_option`,
+`position_intent: sell_to_open`, its own `order_id`, and the expiry it assigned.
+
+## A discard is a proof bundle too
+
+This is the part that usually goes missing. When a candidate fails a ceiling it is **not**
+resized to fit and it is **not** dropped silently — it is written down as a `discarded`
+action with the full scoring attached, exactly like a successful one.
+
+Three real discards from the same account:
+
+| Contract | Failed ceiling | What the record says |
+| --- | --- | --- |
+| `IWM260908P00291000` | `defined_risk_floor` | The cash to secure the put was not free |
+| `SPY260908P00768000` | `max_orders_per_day` | `6 of 6 orders used today` |
+| `QQQ260908P00709000` | `max_orders_per_day` | `6 of 6 orders used today` |
+
+Each one still carries all 21 verdicts — the twenty it passed as well as the one it failed.
+"It was refused, and here is the arithmetic" is a far more useful artifact than a proposal
+that never appears.
+
+## When the broker refuses
+
+Four actions failed at Alpaca itself:
+
+```
+Submission failed: Alpaca CLI error (HTTP 403): insufficient options buying
+power for cash-secured put (required: 28921.01, available: 0) [order submit]
+```
+
+That message is worth reading twice, because it is the most valuable thing the live account
+told us all week. Our own `defined_risk_floor` had cleared those orders — it was counting
+short-put collateral **per underlying**, while Alpaca secures every cash-secured put out of
+one shared pool. Separately, a cancelled order was still being counted as a live collateral
+pledge, freezing $70,100 of a $100,000 account against an order that no longer existed.
+
+Both are fixed: the floor now takes the broker's own options-buying-power figure as
+authoritative, and resting orders are reconciled against the broker at the top of every
+cycle. Neither bug was reachable from our own tests, because the tests encoded the same
+assumption the code did. **Only the real broker disagreed with us, and only because we
+submitted to it and kept what it said.**
+
+<Cards>
+  <Card title="Back to the write-up" description="The claim, the AI logic, and the risk gates" href="/docs/hackathon" />
+  <Card title="Architecture" description="The cycle, the data model, and the two Alpaca surfaces" href="/docs/hackathon/architecture" />
+</Cards>

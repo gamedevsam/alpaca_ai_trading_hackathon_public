@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+html {
+  scrollbar-gutter: stable;
+}
+
+/*
+ * Display serif for the public (home) pages' headlines. The --font-display
+ * variable is set by next/font in app/(home)/layout.tsx; docs pages never set
+ * it, so the Georgia fallback there is irrelevant — the class is unused outside
+ * the (home) group.
+ */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/*
+ * Alternating landing-section surface. Can't be a fd-muted tint: in the light
+ * neutral theme --color-fd-muted equals --color-fd-background, so any muted-based
+ * band composites to exactly the page color and the section rhythm vanishes
+ * (the owner's QA-2 complaint). Light bands are therefore pure white against the
+ * grey page; dark keeps the muted half-step that already reads well.
+ */
+.landing-band {
+  background-color: #fff;
+}
+.dark .landing-band {
+  background-color: color-mix(in srgb, var(--color-fd-muted) 50%, transparent);
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/*
+ * Landing-page motion (B174). Pure CSS so the page stays a server component.
+ * Everything inside the reduced-motion gate; browsers without scroll-driven
+ * animation support simply render the sections static and visible.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes landing-rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .landing-rise {
+    animation: landing-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .landing-delay-1 {
+    animation-delay: 0.08s;
+  }
+  .landing-delay-2 {
+    animation-delay: 0.16s;
+  }
+  .landing-delay-3 {
+    animation-delay: 0.24s;
+  }
+
+  @supports (animation-timeline: view()) {
+    .landing-scroll-rise {
+      animation: landing-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}

@@ -1,0 +1,129 @@
+---
+title: Architecture
+description: How MANDATE is put together — the cycle, the data model, the two Alpaca surfaces, and exactly where the submission ends and the platform begins.
+---
+
+MANDATE is a module inside a larger portfolio-intelligence platform. This page describes
+the module, and is explicit about the line between the two.
+
+## The shape of it
+
+```
+followed YouTube channels ──▶ transcript ──▶ signal (a graded claim)
+                                                    │
+mandate (human-approved prose) ─────────────┐       │
+Alpaca account · positions · option chain ──┼───────┴──▶  ONE LLM CALL
+                                            │                  │
+                                            │            candidate trades
+                                            │             + rationale
+                                            ▼                  │
+                              21 DETERMINISTIC CEILINGS ◀──────┘
+                                     │            │
+                              cleared │            │ failed
+                                     ▼            ▼
+                                  proposed     discarded
+                                     │        (reason kept)
+                            human OR autonomy gate
+                                     ▼
+                            re-check all 21 ceilings
+                                     ▼
+                          alpaca order submit --dry-run
+                                     ▼
+                          alpaca order submit  ──▶ Alpaca
+                                     ▼
+                              proof bundle
+```
+
+The single most important property of that diagram is that **the arrow from the LLM points
+into the ceilings, never around them.** There is no path from a model's output to the broker
+that does not pass through code the model cannot see or influence.
+
+## The cycle
+
+One pass, in a fixed order. The order is load-bearing:
+
+1. **Reconcile resting orders.** Ask the broker about every order the desk still believes is
+   open, and update our book. This runs *first* because everything after it does collateral
+   arithmetic, and an order that went terminal at the broker without our knowing would hold
+   phantom collateral and starve every later proposal. (It did exactly that, once. That is
+   why it runs first.)
+2. **Snapshot the account.** Equity, cash, options buying power, positions — taken from the
+   broker, not inferred.
+3. **Build candidates.** Pull the live option chain for the mandate's underlyings, filter to
+   contracts inside the mandate's own expiry and delta preferences, and compute greeks where
+   the feed does not supply them (labelled as estimates when so, never dressed up as
+   broker-authoritative).
+4. **Read the open signals.** The creators' unresolved claims, with their scorecards.
+5. **One inference call.** Mandate + account + candidates + signals in; ranked candidate
+   trades, a rationale each, and a falsifiable failure condition out.
+6. **Score every candidate against the ceilings.** Cleared → `proposed`. Failed →
+   `discarded`, with the failing ceiling and its numbers attached.
+7. **Approve** (human, or the autonomy gate) and **re-score** against the account as it is
+   at that moment.
+8. **Submit** through the Alpaca CLI, dry-run then live.
+9. **Log a prediction.** The desk's own "I would be wrong if…" is filed in the same ledger
+   the creators' claims go into, so the desk is graded on the same terms it grades them.
+
+## The data model
+
+Seven versioned records, all of them plain JSON documents in an append-only entity store.
+Their definitions ship in the public repository.
+
+| Record | What it holds |
+| --- | --- |
+| `alpaca_mandate` | The strategy, in prose, plus its machine-readable bounds. Versioned; a change is a new version, not an overwrite |
+| `alpaca_control` | The owner's ceilings, the kill switch, and the autonomy gate. **Never written by the AI** |
+| `alpaca_action` | One trade's whole life: proposal, rationale, all 21 ceiling verdicts, every state transition, the CLI command, the broker's reply, the outcome |
+| `alpaca_account_snapshot` | What the broker said the account was, at a moment |
+| `alpaca_credentials` | Broker keys, encrypted at rest |
+| `alpaca_channel` | A followed creator and their recent videos |
+| `alpaca_signal` | One extracted claim: verbatim quote, ticker, direction, horizon, falsifiable condition, and the desk's verdict on it |
+
+The separation between `alpaca_mandate` and `alpaca_control` is the design in one line:
+**the mandate is what the desk wants, the control is what it is allowed to do, and they are
+edited by different parties.**
+
+## The two Alpaca surfaces
+
+**Execution — the Alpaca CLI.** `alpaca order submit` is invoked as a subprocess, first with
+`--dry-run` to have Alpaca validate the request shape, then for real. Each order carries a
+deterministic `client-order-id` derived from our action id, which makes submission idempotent:
+a retry cannot place the same trade twice. The CLI is compiled into the deployed image by its
+own Go build stage, and its version is recorded on every order it places.
+
+**Reading — Alpaca's MCP server.** Alpaca's own MCP server runs as a private sidecar with no
+public port, on an internal network, with its trading toolset disabled. Thirty-one of its read
+tools are re-exported to the owner's AI assistant under an `alpaca_` prefix, alongside our own
+desk tools. **No write tool is proxied.** If the sidecar is unreachable, the desk continues —
+it is an assistant convenience, not a dependency of the trading path.
+
+The desk's own reads (chain, quotes, clock, account) go through a typed REST client. That is
+deliberate: the hot path of the cycle should have one implementation, and a proxy hop inside it
+would buy nothing and add a failure mode.
+
+## Everything is a proposal, including the AI's hands
+
+The whole platform is built on one rule — **the system does the doing, the human does the
+deciding** — and MANDATE is the only module that can touch money, so it carries the rule's
+strictest form.
+
+The owner drives the desk mostly by *talking to an AI assistant over MCP*: follow a channel,
+refresh it, set the ceilings, approve a proposal, flip the gate. That is the AI acting as his
+hands. What the assistant is never allowed to do is act as his **judgment** — it cannot decide
+what he believes or what he is willing to risk. Those are writes only he makes.
+
+## Where the submission ends
+
+The published repository contains the desk module and its tests, and the public site you are
+reading. It does **not** contain the platform underneath: the entity engine, the versioning
+and encryption layer, and the schema code generation stay private.
+
+The practical consequence, stated rather than papered over: **the published desk source does
+not build standalone.** It imports the platform's entity service and its generated schema
+registry. It is there to be *read* — the ceilings, the state machine, the CLI executor and the
+twenty test files are the argument, and they read fine without the engine underneath them.
+
+<Cards>
+  <Card title="The proof bundle" description="What one order carries with it, from a real action" href="/docs/hackathon/proof-bundle" />
+  <Card title="Back to the write-up" description="The claim, the risk gates, and what the record shows" href="/docs/hackathon" />
+</Cards>

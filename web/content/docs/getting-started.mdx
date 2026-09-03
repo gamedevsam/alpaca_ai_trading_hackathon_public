@@ -1,0 +1,141 @@
+---
+title: Getting started
+description: From an empty account to your first trade plan — what to do, in order, and what you get at each step.
+---
+
+This walks the whole product in the order it's meant to be used. Each step is genuinely
+useful on its own, so you can stop after step 2 and still be better off than you were.
+Budget about twenty minutes for the first three steps.
+
+## 1. Sign in
+
+Access is currently limited to invited accounts while the product is in its development
+phase. If you have one, sign in at [the app](https://stocks.dataconnector-pro.com/auth/signin).
+
+Once you're in, the front door is **Home** — your book, what the AI thinks of it, and the
+trade plan that follows, threaded down one page. It'll be mostly empty until you finish
+step 2. The left rail groups everything into six sections: Home, Portfolio, Managers,
+Blend, AI, and System.
+
+## 2. Get your holdings in
+
+Everything downstream is only as good as this step, so it's the one to do properly. Open
+**Portfolio → Add a source**. Three ways in, and you can mix them:
+
+- **Sync a portfolio tracker.** Connect your tracker account and your positions arrive on
+  a schedule, with the sync's own health visible in-app. Best if you already use one.
+- **Import a CSV.** Upload a broker export. You get a diff preview — exactly what will be
+  added, changed and removed — before anything is saved.
+- **Enter positions by hand.** Ticker, quantity, optional cost basis. Fine for a small
+  book or a quick start.
+
+All three land in the same place, and every number is stamped with how current it is.
+
+**What you have now:** one view of everything you own across every account, with
+concentration made visible — your largest position, your top-three weight, and how many
+genuinely independent bets you're making once names that move together are counted as
+[one bet](/docs/concepts/target#effective-bets-how-many-bets-are-you-really-making).
+For a lot of people this alone is worth the trip.
+
+## 3. Record the people you follow
+
+Open **Managers → Sources**. A [source](/docs/concepts/sources) is any reference
+portfolio that can feed your plan: a [manager](/docs/concepts/managers) you track, your
+own written strategy, or an AI sleeve. Add one and record what they hold — with the date
+and where the information came from (a filing, a video, a member update).
+
+Two things to set per source, because they're what make it useful later:
+
+- **Status** — active, on trial, or just watching.
+- **How often they publish** — so the app can tell you when their data has gone
+  [stale or overdue](/docs/concepts/sources#freshness-how-old-is-this) instead of letting
+  you act on a book from March.
+
+Recording a manager's book by hand is a chore, which is exactly why you don't have to:
+see [step 6](#6-work-by-talking-instead-of-clicking).
+
+**What you have now:** a dated, attributed history of every book you follow. Record a
+second disclosure later and you can diff the two — including the exits nobody announced.
+
+## 4. Blend them into a target
+
+Open **Blend → Workbench**. This is the live, all-in-one view: drag a source's weight and
+the plan, the drift against your account, and the trade list all redraw at once. Nothing
+saves until you say so, so experiment freely.
+
+- Set a [trust weight](/docs/concepts/blend#trust-weights-how-much-each-source-counts) per
+  source — how much of your plan that person is responsible for. Weights normalize to
+  100%.
+- Set the rules you always want applied — names you'd never hold and where their money
+  goes instead, a cap on any single position, how much of the portfolio stays in cash.
+  The full editor is on the **Blend designer** page, and every save is versioned.
+- The result is your [target portfolio](/docs/concepts/target). Open any line to see
+  which sources contributed it and at what weight. Excluded names are listed too, with
+  your reasons.
+
+**What you have now:** an explainable plan. Not "the algorithm says 9.5%" — _these two
+managers hold it, at these weights, under these rules you set._
+
+## 5. See the gap, and decide
+
+Open **Blend → Reconcile**, pick a saved target and one account.
+
+You get the position-by-position drift and the **trade plan** that closes it: the buys and
+sells, sized, with the cash implication. Export it to CSV or print it and run it at your
+broker.
+
+It's a proposal. Nothing here places an order.
+
+While you're on this page, spend two minutes on
+[conviction custodians](/docs/concepts/custodians): anchor each position to the reason you
+hold it — a source, your own thesis, or the system. Right after an import everything is
+unanchored, which is normal. Once anchored, the app can tell you when a reason
+_disappears_ — a manager exits a name and you're suddenly holding an
+[orphan](/docs/concepts/custodians#orphans-positions-with-no-reason-left).
+
+## 6. Work by talking instead of clicking
+
+Anchoring 80 positions or transcribing a manager's book is the kind of machinery this
+product is supposed to spare you. So [connect your AI assistant](/docs/mcp-assistant) —
+Claude or any assistant that speaks MCP — to your account.
+
+From your normal chat window it can read your holdings and sources, record a manager's
+new disclosure, propose custodian anchors for your whole book with reasoning, and flag
+what's drifted. You review and approve in conversation; it does the typing.
+
+It cannot trade. The tools to place an order, move money, or touch a brokerage account do
+not exist on that surface — not as a rule it's asked to follow, but as tools that aren't
+there to call.
+
+## 7. Ask the panel (Pro)
+
+The [AI Council](/docs/ai-council) is a set of AI portfolio managers with different
+investing philosophies, grounded in your actual holdings. Talk to one, or convene the
+panel to debate a question and return prioritized recommendations with reasons.
+
+Available on the Pro and Ultimate tiers.
+
+## 8. Keep score (optional, and worth it)
+
+Open **Managers → Predictions**. Record what a manager actually claimed — verbatim — and
+what would have to be true for it to count as right. Later, you rule on the outcome and
+their [scorecard](/docs/concepts/predictions#scorecards-that-refuse-to-flatter) builds up
+per kind of claim.
+
+It's the honest input to the trust weight you set back in step 4.
+
+## 9. Automated execution (Ultimate, optional)
+
+The top tier adds an [automated execution module](/docs/alpaca-portfolio-manager). It
+starts on a **paper** (simulated-money) account, can never open an undefined-risk
+position, and needs two separate deliberate actions from you before it can touch real
+money. Read that page before connecting anything.
+
+<Cards>
+  <Card title="Concepts & glossary" description="Every term above, defined properly" href="/docs/concepts" />
+  <Card
+    title="Sources & the Blend Workbench"
+    description="The full guide to steps 3 through 5"
+    href="/docs/sources-and-blend"
+  />
+</Cards>

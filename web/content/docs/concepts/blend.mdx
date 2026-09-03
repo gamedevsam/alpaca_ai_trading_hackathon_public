@@ -1,0 +1,73 @@
+---
+title: Blend
+description: Your recipe — how much each source counts and the rules the system follows when it combines them.
+---
+
+**A blend is your recipe.** It has two halves: how much each
+[source](/docs/concepts/sources) counts, and the rules the system applies when it
+combines them into a plan. Save it and it becomes versioned — every change is a new
+version you can compare against and roll back to.
+
+The blend is where _your_ judgment lives. Everything downstream is arithmetic on top of
+it, and every result can be traced back to a choice you made here.
+
+## Trust weights: how much each source counts
+
+A **trust weight** is the share of your plan a given source is responsible for. Weights
+normalize to 100%, so setting one manager to 40 and two others to 20 each means exactly
+what it looks like.
+
+This is the difference between _following_ someone and _copying_ them. You can hold a
+manager at 10% while you're still making up your mind, run someone at 0% to keep tracking
+them without letting them into the plan, and raise a weight only after their
+[scorecard](/docs/concepts/predictions#scorecards-that-refuse-to-flatter) has earned it.
+
+## Construction rules: the constraints you set once
+
+Rules are the constraints the system applies while building your plan, so you don't have
+to re-apply them by hand every time a source changes:
+
+- **Exclusions.** Names you will never hold, each with a reason and — importantly — an
+  instruction for where its money goes: redistributed across everything else, moved to
+  cash, or substituted with another ticker (say, a US-tradeable alternate line of a
+  foreign company). Excluding a manager's cash buffer and silently pushing that money
+  into stocks would misrepresent their strategy, so the choice is explicit.
+- **Position caps.** A maximum weight for any single position, a minimum below which a
+  line isn't worth holding, and a minimum trade size so the plan doesn't ask you to buy
+  $12 of something.
+- **Overlap amplifier.** When several sources independently hold the same name, that
+  agreement can count for extra — off by default, capped when on, and always your call
+  how strong it is.
+- **Account rules.** Placement hints (this kind of holding belongs in the tax-advantaged
+  account) and positions to preserve untouched.
+- **Accessibility.** Tickers you genuinely can't trade from your brokerage, removed with
+  the rest of the plan renormalized around them.
+- **Normalization.** How much of the portfolio is invested at all — set 96% and you keep
+  a deliberate 4% cash reserve, rather than discovering you're fully invested by accident.
+
+## Why versioning matters here
+
+Every saved blend and every saved ruleset is versioned with a timestamp, and any earlier
+version can be restored. That turns your allocation policy into something you can _audit_
+— you can answer "what was I doing in March, and why did I change it?" months later,
+instead of relying on memory.
+
+## Where this shows up
+
+The app's **Blend** section holds four pages, all built on this one concept:
+
+- **Workbench** — the live, all-in-one view: drag a weight and watch the plan, the drift
+  against your account, and the trade list redraw at once. Nothing here is saved until
+  you save it, so experimenting costs nothing.
+- **Blend designer** — the focused editor for weights and rules, with version history.
+- **Target** — [what the blend produces](/docs/concepts/target).
+- **Reconcile** — [your account measured against it](/docs/concepts/reconcile).
+
+<Cards>
+  <Card
+    title="Build your first blend"
+    description="The step-by-step guide, from sources to a saved target"
+    href="/docs/sources-and-blend"
+  />
+  <Card title="Target" description="The portfolio your blend produces, line by line" href="/docs/concepts/target" />
+</Cards>

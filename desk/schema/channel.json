@@ -1,0 +1,57 @@
+{
+  "$id": "entity/alpaca/channel",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AlpacaChannel",
+  "prefix": "ACH",
+  "type": "object",
+  "required": ["type", "header", "body"],
+  "properties": {
+    "type": { "const": "alpaca_channel" },
+    "header": {
+      "type": "object",
+      "required": ["owner_user_id", "environment", "status", "channel_id"],
+      "properties": {
+        "owner_user_id": { "type": "string" },
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "status": { "type": "string", "enum": ["active", "archived"] },
+        "channel_id": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "required": ["environment", "url", "channelId", "title", "videos", "lastRefreshedAt"],
+      "properties": {
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "url": { "type": "string" },
+        "channelId": { "type": "string" },
+        "title": { "type": "string" },
+        "videos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["videoId", "title", "publishedAt", "extractedAt"],
+            "properties": {
+              "videoId": { "type": "string" },
+              "title": { "type": "string" },
+              "publishedAt": { "type": ["string", "null"] },
+              "durationSec": { "type": ["number", "null"] },
+              "extractedAt": { "type": ["string", "null"] }
+            },
+            "additionalProperties": false
+          }
+        },
+        "lastRefreshedAt": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "id": { "$ref": "~/entity.json#/properties/id" },
+    "owner_id": { "$ref": "~/entity.json#/properties/owner_id" },
+    "external_id": { "$ref": "~/entity.json#/properties/external_id" },
+    "status": { "$ref": "~/entity.json#/properties/status" },
+    "schema_version": { "$ref": "~/entity.json#/properties/schema_version" },
+    "created_at": { "$ref": "~/entity.json#/properties/created_at" },
+    "updated_at": { "$ref": "~/entity.json#/properties/updated_at" }
+  },
+  "additionalProperties": false
+}

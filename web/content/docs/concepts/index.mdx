@@ -1,0 +1,136 @@
+---
+title: Concepts & glossary
+description: Every term this product uses, defined in plain language — what it is, why it exists, and what it does for you.
+---
+
+This product has its own vocabulary, and you shouldn't have to guess at any of it. Each
+term below is defined in one line here, and has its own page with the longer story: the
+problem it solves, what it does for you, and where it shows up in the app.
+
+If you only read one thing, read this: **you own the portfolio, the system does the
+work of keeping it honest, and nothing happens without you approving it.**
+
+## The vocabulary, at a glance
+
+### Manager
+
+An investor whose portfolio you follow — a fund manager, a YouTube investor, a friend
+whose picks you respect. You record what they hold; the system does the rest.
+[Full definition →](/docs/concepts/managers)
+
+### Source
+
+Any reference portfolio that can feed your plan: a manager you track, your own written
+strategy, an AI sleeve. Sources are _inputs_ — they are never your brokerage accounts.
+[Full definition →](/docs/concepts/sources)
+
+### Snapshot
+
+One dated record of what a source held on a given day. Snapshots are append-only: a new
+disclosure adds to the history, it never overwrites it.
+[Full definition →](/docs/concepts/sources#snapshots-are-dated-and-append-only)
+
+### Provenance
+
+Where a number came from — a filing, an interview, a video, your own inference — carried
+with the number for the rest of its life.
+[Full definition →](/docs/concepts/sources#provenance-where-a-number-came-from)
+
+### Freshness
+
+How old a source's data is, computed and shown wherever that source is used, so a plan
+built on a six-month-old disclosure says so out loud.
+[Full definition →](/docs/concepts/sources#freshness-how-old-is-this)
+
+### Trust weight
+
+How much a given source counts toward your plan, expressed as a percentage. Your
+judgment, applied consistently.
+[Full definition →](/docs/concepts/blend#trust-weights-how-much-each-source-counts)
+
+### Blend
+
+Your recipe: the trust weight on each source, plus the rules the system applies when it
+combines them. Saved, versioned, and reversible.
+[Full definition →](/docs/concepts/blend)
+
+### Construction rules
+
+The constraints applied while building your plan — what to exclude and where its money
+goes instead, position caps, how much to keep in cash, what you can't trade.
+[Full definition →](/docs/concepts/blend#construction-rules-the-constraints-you-set-once)
+
+### Target
+
+The portfolio your blend produces: a list of holdings and weights, each line traceable
+back to the sources and rules that put it there.
+[Full definition →](/docs/concepts/target)
+
+### Effective bets
+
+How many genuinely independent bets your book makes, after names that move together are
+counted as one. Usually a smaller — and more honest — number than your position count.
+[Full definition →](/docs/concepts/target#effective-bets-how-many-bets-are-you-really-making)
+
+### Reconcile
+
+Comparing your target against one real account's holdings to see exactly where you've
+drifted.
+[Full definition →](/docs/concepts/reconcile)
+
+### Trade plan
+
+The buy and sell list that would close that drift. It is a proposal, exportable to CSV
+or print. Nothing here places an order.
+[Full definition →](/docs/concepts/reconcile#the-trade-plan)
+
+### Conviction custodian
+
+Your recorded reason for holding a position: the source you copied it from, your own
+thesis, or the system. Answers "why do I own this?" for every line.
+[Full definition →](/docs/concepts/custodians)
+
+### Orphan
+
+A position you hold that no longer has a reason attached — the name a manager quietly
+exited while you kept holding.
+[Full definition →](/docs/concepts/custodians#orphans-positions-with-no-reason-left)
+
+### Copy fidelity
+
+How faithfully your real book tracks a source you meant to follow, and the largest gaps
+between the two.
+[Full definition →](/docs/concepts/custodians#copy-fidelity-are-you-actually-following-them)
+
+### AI Council
+
+A panel of AI portfolio managers with distinct, editable investing philosophies. They
+research, debate, and recommend — grounded in what you actually hold.
+[Full definition →](/docs/concepts/ai-council)
+
+### Prediction
+
+A claim a manager (or you) actually made, recorded word-for-word, kept separate from the
+falsifiable condition that will grade it.
+[Full definition →](/docs/concepts/predictions)
+
+### Scorecard
+
+The record of how those claims turned out, per manager and per kind of claim — with
+counts instead of percentages until the sample is big enough to mean anything.
+[Full definition →](/docs/concepts/predictions#scorecards-that-refuse-to-flatter)
+
+### MCP
+
+The open standard that lets the AI assistant you already use connect to your portfolio
+directly, so you can work from a chat window instead of a form.
+[Full definition →](/docs/mcp-assistant)
+
+## Two words about what none of these do
+
+Every concept above is a **read, a record, or a proposal**. None of them place a trade,
+move money, or change your holdings on their own. The one part of the product that can
+touch a brokerage account —
+[automated execution](/docs/alpaca-portfolio-manager) — starts on a simulated account and
+requires two separate deliberate actions from you before it can go anywhere near real
+money.

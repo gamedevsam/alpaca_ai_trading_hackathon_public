@@ -1,0 +1,60 @@
+---
+title: Reconcile
+description: Comparing what you actually hold against what you meant to hold — and the trade list that closes the gap.
+---
+
+**Reconciling is comparing one real account's holdings against a saved
+[target](/docs/concepts/target)**, position by position, to see exactly where reality has
+drifted from your plan.
+
+Every portfolio drifts. Prices move, you buy something on a Tuesday impulse, a manager
+you follow rotates out of a name and you don't notice for two months. Drift isn't a
+failure — it's physics. Not being able to _see_ it is the problem.
+
+## What the comparison shows
+
+For each name, reconciling shows what your account holds today, what the target says it
+should hold, and the difference between the two — in weight and in dollars. Positions the
+target doesn't include at all show up too, which is often the more useful half.
+
+The comparison runs against **one account at a time**, deliberately. A target expressed
+as percentages only means something relative to a specific pot of money; averaging seven
+accounts together would produce a plan you can't actually execute in any of them.
+
+## The trade plan
+
+The output is a **trade plan** — the buys and sells that would close the gap, ordered by
+size, with the cash implication stated plainly ("$15k of buys, $15k of sells, $15 net").
+
+It is a **proposal, and only a proposal.** You can export it to CSV or print it and run
+the trades yourself at your broker. Nothing in this product places an order because you
+looked at a trade plan. (The one exception, the
+[automated execution module](/docs/alpaca-portfolio-manager), is a separate paid feature
+that starts on a simulated account and needs two deliberate actions from you before it
+can reach real money.)
+
+Small differences are filtered out by the minimum-trade rule you set in your
+[construction rules](/docs/concepts/blend#construction-rules-the-constraints-you-set-once),
+so the plan is a list you'd actually work through — not fifty $4 adjustments.
+
+## What else lives on this page
+
+Reconcile is also where you answer the _why_ questions about your real book:
+
+- **[Conviction custodians](/docs/concepts/custodians)** — the reason on record for each
+  position you hold, and the list of positions that don't have one yet.
+- **[Copy fidelity](/docs/concepts/custodians#copy-fidelity-are-you-actually-following-them)**
+  — how faithfully you're actually tracking a manager you meant to follow.
+
+<Cards>
+  <Card
+    title="Conviction custodians"
+    description="Why do I own this? — answered per position"
+    href="/docs/concepts/custodians"
+  />
+  <Card
+    title="The full workflow"
+    description="Sources to blend to target to trade plan"
+    href="/docs/sources-and-blend"
+  />
+</Cards>

@@ -1,0 +1,75 @@
+---
+title: The AI Council
+description: A panel of AI portfolio managers with different philosophies, debating your actual holdings and ending in prioritized proposals.
+---
+
+The **[AI Council](/docs/concepts/ai-council)** is a panel of AI portfolio managers you
+can consult about your portfolio. Each has a distinct investing philosophy — written down
+as a persona you can read and edit, not hidden inside a prompt.
+
+Available on the **Pro** and **Ultimate** tiers.
+
+## Why a panel and not one chatbot
+
+Ask a single AI what to do with your portfolio and you get a confident answer shaped by
+however you happened to phrase the question. Ask three with genuinely different
+philosophies — a growth-minded one, a patient value one, a quality-compounder one — and
+you get the argument instead. Where they agree, where they don't, and why.
+
+That argument is the product. A conclusion that survives three hostile readings is worth
+considerably more than the first plausible answer.
+
+## Running a session
+
+From the **AI → AI Council** page:
+
+1. **Write a prompt** — a question, an idea you're weighing, or pick a template like a
+   monthly portfolio review.
+2. **Choose what it's grounded on** — one account, a group of them, or everything.
+3. **Convene.** The panel debates across multiple rounds until it converges on a
+   satisfaction threshold or hits the round limit you set.
+4. **Read the synthesis.** A synthesizer writes up the result as prioritized actions —
+   _trim this, research that_ — each with its reasoning and a priority level.
+
+The session records what it was grounded on and whether that data was fresh at the time,
+so a recommendation built on stale holdings says so.
+
+## Grounded in your actual book
+
+Council sessions are injected with facts about what you really hold — positions, weights,
+portfolio-level metrics — from your synced or imported data. It isn't reasoning about the
+market in the abstract; it's reasoning about your book, at its current weights, with your
+concentration.
+
+## Your panel, your models
+
+- **Personas are editable.** Each manager's philosophy is a document you can rewrite —
+  adjust its risk tolerance, sharpen its style, or add a new persona. Every edit is
+  versioned, so you can see what changed and roll it back.
+- **You choose the provider.** The Council runs on whichever AI provider you configure.
+  Provider connectivity is visible in **Admin & diagnostics**, including an opt-in deep
+  check that round-trips a real request.
+- **No provider? It still runs — and says so.** With nothing configured, the Council falls
+  back to a deterministic stand-in that is clearly labeled simulated. You will never be
+  shown a canned response dressed up as a live model.
+
+## Where it stops
+
+A Council recommendation is **a proposal**. There is no path from "the panel recommends
+trimming this" to an order being placed — acting on it goes through you, and then through
+the same [reconcile](/docs/concepts/reconcile) and approval loop as everything else.
+
+The panel's job is to make you a better decision-maker, not to replace you as one.
+
+<Cards>
+  <Card
+    title="Connect your own assistant"
+    description="The other AI surface — your chat client, your models"
+    href="/docs/mcp-assistant"
+  />
+  <Card
+    title="The prediction ledger"
+    description="Keep score of claims — including the Council's"
+    href="/docs/predictions"
+  />
+</Cards>

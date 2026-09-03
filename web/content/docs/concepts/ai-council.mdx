@@ -1,0 +1,61 @@
+---
+title: AI Council
+description: A panel of AI portfolio managers with distinct philosophies, arguing about your actual holdings.
+---
+
+**The AI Council is a panel of AI portfolio managers you can consult about your
+portfolio.** Each one has its own investing philosophy — a growth-minded one, a patient
+value one, a quality-compounder one — written down as an editable persona rather than
+hidden in a prompt.
+
+You can talk to one of them, or convene the whole panel to debate a question and return a
+synthesized recommendation. The Council is part of the Pro tier (see
+[pricing](/pricing)).
+
+## Why a panel instead of one assistant
+
+Ask a single AI what to do with your portfolio and you get a confident answer shaped by
+whatever framing you happened to use. Ask three with genuinely different philosophies and
+you get the argument instead — where they agree, where they don't, and _why_. The
+disagreement is the useful part; a consensus that survives it is worth more than a first
+answer.
+
+A session runs multiple rounds until the panel converges or hits your round limit, then a
+synthesizer writes up the result: prioritized actions (trim this, research that), each
+with a reason attached.
+
+## Grounded in what you actually hold
+
+Council sessions are injected with facts about your real book — positions, weights,
+concentration — from your synced or imported data, and each run records which portfolio
+it was grounded on and whether that data was fresh. It isn't reasoning about markets in
+the abstract; it's reasoning about your book.
+
+## Your panel, your models
+
+- **Personas are editable.** Every manager's philosophy is a document you can rewrite —
+  tune its risk tolerance, sharpen its style, or add a new persona entirely. Every edit is
+  versioned, so you can see what changed and roll back.
+- **You choose the model.** The Council runs on whichever AI provider you configure. If
+  none is configured, it still runs — on a deterministic stand-in, clearly labeled as
+  simulated, so you're never shown a canned answer dressed up as a live model.
+
+## The hard limit
+
+A Council recommendation is **a proposal, and nothing else.** There is no path from
+"the panel recommends trimming this" to an order being placed. Acting on it runs through
+you, and then through the same [reconcile](/docs/concepts/reconcile) and approval loop as
+everything else here.
+
+<Cards>
+  <Card
+    title="Using the AI Council"
+    description="Sessions, personas, providers, and what to ask"
+    href="/docs/ai-council"
+  />
+  <Card
+    title="Your own AI assistant"
+    description="Connect the assistant you already use, instead"
+    href="/docs/mcp-assistant"
+  />
+</Cards>

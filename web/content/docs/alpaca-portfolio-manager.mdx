@@ -1,0 +1,81 @@
+---
+title: Automated execution
+description: The optional module that can actually place trades — simulated first, defined-risk by construction, and impossible to arm by accident.
+---
+
+Everything else in this product stops at a proposal. This is the one module that can
+place an order, so it is also the one with the most safety machinery around it.
+
+It trades equities and single-leg options (covered calls and cash-secured puts) through
+[Alpaca](https://alpaca.markets/), starting on a **paper** account — simulated money —
+so the whole mechanism can be proven out at zero risk before anything real is involved.
+
+Available on the **Ultimate** tier, and entirely optional: the rest of the product works
+without it.
+
+## Read this part first
+
+If you're skeptical of letting software near your brokerage account, you should be. Three
+design decisions are what make this defensible:
+
+1. **Approval is a separate step from proposal, and you decide who holds it.** An AI never
+   grants itself that authority. By default every proposal waits for your decision. The one
+   exception is a gate you set yourself, per desk — and only on a paper account — which lets
+   the desk approve its own proposals so an unattended strategy can be proven out. Whichever
+   way that gate is set, an autonomous approval runs the identical guarded path a human
+   approval does; the checks below are not skipped, and the kill switch outranks the gate.
+2. **The risk limits are code, not instructions.** They are deterministic checks that run
+   regardless of what the AI proposed, and they run _again_ at execution time against the
+   current account state. An approval authorizes the checks to run; it doesn't skip them.
+3. **Nothing runs on a schedule inside the app.** A trade cycle fires only when you press
+   a control or when an external, authenticated trigger you set up calls it. There is no
+   background loop trading unsupervised.
+
+## The lifecycle
+
+Every trade moves through the same stages, and each is logged:
+
+```
+draft → proposed → approved → submitted → filled → reconciled
+```
+
+## The hard limits
+
+- **No naked short options, ever.** Undefined-risk positions are forbidden outright, no
+  matter what a mandate or an AI proposal asks for.
+- **Position and exposure caps**, checked at proposal time and re-checked at execution.
+- **A kill switch and a dry-run mode** you control at any time, independent of anything
+  in flight.
+- **Idempotent order submission**, so a retried or duplicated request can't place the same
+  trade twice.
+
+## Paper first, live only when you say so
+
+Paper and live run through the **exact same code path** — the environment is a
+configuration value, not a separate implementation — so paper trading proves the real
+mechanism rather than a lookalike of it.
+
+Going live takes **two independent deliberate actions**: arming the live-trading toggle,
+and firing that environment's own trigger. Until both happen, nothing can reach a real
+account. This is deliberately awkward. It's the one place in the product where friction is
+the feature.
+
+## How it relates to the rest
+
+The [trade plan](/docs/concepts/reconcile#the-trade-plan) from Reconcile is a list you can
+run by hand at any broker, on any tier — that path never goes away. This module is for
+people who want the execution step automated too, and it inherits the same rule as
+everything else: **the system does the doing, you do the deciding.**
+
+<Cards>
+  <Card
+    title="Reconcile"
+    description="The manual path — a trade plan you run yourself"
+    href="/docs/concepts/reconcile"
+  />
+  <Card
+    title="Admin & diagnostics"
+    description="Where to check that everything is healthy"
+    href="/docs/admin-diagnostics"
+  />
+</Cards>

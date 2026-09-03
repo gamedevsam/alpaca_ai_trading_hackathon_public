@@ -1,0 +1,79 @@
+---
+title: Conviction custodians
+description: The reason on record for every position you hold — so "why do I own this?" always has an answer.
+---
+
+**A conviction custodian is your recorded reason for holding a position.** Every name in
+your book is anchored to one of three things:
+
+- **a [source](/docs/concepts/sources)** — you hold it because a manager you follow
+  holds it,
+- **your own thesis** — you hold it because _you_ decided to, on your own reasoning,
+- **the system** — it's there mechanically (an index fund, a placeholder, a sweep).
+
+That's the whole idea. It sounds administrative until you try to answer the question
+without it.
+
+## The problem it solves
+
+Portfolios accumulate. A position enters for a good reason and then the reason quietly
+leaves: the manager who convinced you sold out, the thesis you had in 2023 stopped being
+true, or you honestly can't remember why it's there. The position stays, because nothing
+ever prompts you to revisit it.
+
+Anchoring makes the reason explicit at the moment you hold it, so later — when you're
+deciding what to sell to fund something new — you're choosing between _stated reasons_
+rather than between tickers.
+
+## Orphans: positions with no reason left
+
+An **orphan** is a position you hold that no source's conviction backs anymore. The
+clearest case: a manager you copy exits a name, you don't see the disclosure, and you
+keep holding a position that its originator abandoned.
+
+Two things about how orphans are reported:
+
+- **The report never acts.** It flags; you rule. It will not sell, will not auto-anchor a
+  position to a source it guessed at, and will not decide something is a mistake.
+- **Right after you import a book, everything is an orphan** — nothing is anchored yet.
+  That's a setup step, not an alarm, and the app says so rather than showing you a red
+  wall of nothing.
+
+You can also declare what's **out of scope**: cash is ballast, not a conviction, and
+some holdings are deliberately off-strategy. Scope is set in your construction rules, and
+excluded holdings are named and counted rather than silently dropped — you can always see
+what wasn't examined.
+
+## Copy fidelity: are you actually following them?
+
+If you set out to follow a manager, **copy fidelity** measures how well you actually are:
+how much of your book overlaps theirs, and which positions account for the biggest gaps.
+
+It's the difference between believing you're running someone's strategy and knowing it.
+Fidelity is measured against what you could realistically have bought — your exclusions
+and untradeable names are applied first — because an infidelity you're structurally
+incapable of correcting isn't a measurement, it's noise.
+
+## Anchoring a whole book at once
+
+Anchoring 80 positions by hand would be exactly the kind of machinery this product is
+supposed to spare you. So there are two paths, and both stay: click a dropdown on any row
+to anchor one position in context, or ask your
+[connected AI assistant](/docs/mcp-assistant) to propose anchors for the whole book with
+its reasoning, review the proposal in conversation, and let it apply the batch once you
+approve.
+
+The AI executes an anchoring **you state**. It doesn't decide what you believe.
+
+<Cards>
+  <Card
+    title="Reconcile"
+    description="Where custodians, fidelity, and the trade plan live"
+    href="/docs/concepts/reconcile"
+  />
+  <Card
+    title="Connect your AI assistant"
+    description="Batch work like this, done by talking"
+    href="/docs/mcp-assistant"
+  />
+</Cards>

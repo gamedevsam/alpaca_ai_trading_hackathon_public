@@ -1,0 +1,221 @@
+---
+title: MANDATE
+description: An autonomous options desk that can prove it obeyed. The strategy lives in a mandate a human wrote and approved — not in the code.
+---
+
+This page is the write-up for **MANDATE**, our entry in the Alpaca AI Trading Agents
+Hackathon. It trades a **paper** account — simulated money — and has never been pointed at
+a live one.
+
+## The claim
+
+Most trading agents ask you to trust that the model behaved. This one is built so you
+never have to: **an LLM proposes, deterministic code disposes, and every order carries a
+record of the rules it was measured against — including the ones it failed.**
+
+The strategy is not in the source. It is a **mandate**: a paragraph of plain English a
+human wrote, versioned like a document, that says what this desk is allowed to want. Change
+the mandate and the desk changes behaviour. Change nothing else.
+
+Here is the mandate the desk is running right now, in full:
+
+> You run a small premium-selling desk on a $100,000 paper account. Sell cash-secured puts
+> — out of the money, expiring this Friday, at strikes you would be content to own the name
+> at — on SPY, QQQ, IWM, or on a large, liquid stock where a creator you follow has made a
+> bullish call you find credible. Prefer the strike with |delta| ≤ 0.20 that still pays at
+> least $0.30 of premium. Never carry more than two open contracts per underlying. Treat a
+> creator's call as a claim to test, not an instruction: say in one sentence why it survives
+> your own judgment, or decline it. If implied volatility is unusually low, or the index is
+> within 1% of its 52-week high with a scheduled macro event before expiry, propose nothing
+> and say why. State, per proposal, the condition under which you would be wrong by Friday's
+> close.
+
+## One cycle, end to end
+
+A **trade cycle** is one pass of the desk. It runs on a schedule during market hours, and
+nobody is watching it.
+
+1. **Read the world.** Account, positions and resting orders from Alpaca; the live option
+   chain for the mandate's underlyings; and any **signals** — investment claims extracted
+   from the YouTube channels the owner follows (see below).
+2. **Reconcile the book first.** Every order the desk believes is still resting is
+   re-checked against the broker before any collateral maths runs, so the desk never
+   reasons from a stale position.
+3. **Propose.** One LLM call, one prompt, one persona: the mandate, the account, the
+   candidate contracts, and the creators' open claims go in; a small set of candidate
+   trades with a written rationale and a falsifiable "how I would be wrong" condition
+   comes back.
+4. **Dispose.** Every candidate is scored against **21 named ceilings** in plain,
+   non-AI code. A candidate that clears all of them becomes a *proposal*. One that fails
+   any of them is *discarded* — never quietly resized to fit.
+5. **Approve.** Either a human approves it, or — if the owner has deliberately set the
+   desk's autonomy gate to `fully_autonomous` — the desk approves its own paper proposal.
+   Either way the ceilings are re-run at execution time against the account as it is *now*.
+6. **Submit.** The order goes to Alpaca through **Alpaca's own CLI**, dry-run first, then
+   for real. The exact command and the broker's exact reply are stored.
+7. **Record.** Every stage writes a timestamped event onto the action. That record is the
+   [proof bundle](/docs/hackathon/proof-bundle).
+
+## The AI logic
+
+**One agent, one prompt, one call per cycle.** There is no chain of agents debating each
+other, because every extra hop is another place a hallucination can enter with nothing to
+catch it.
+
+What the model is asked to do is deliberately narrow: read a mandate and a chain, pick
+contracts, and *argue for them*. What it is never asked to do is decide whether a trade is
+safe. It cannot see the ceilings, cannot negotiate them, and cannot tell whether a proposal
+it made was accepted or thrown away.
+
+Two properties fall out of that split:
+
+- **The model can be wrong without being dangerous.** A bad proposal is a discarded row
+  with a reason attached, not a bad order.
+- **A silent model is not a silent desk.** If inference returns nothing — no key, a bad
+  route, an empty completion — that is treated as a hard failure and recorded. The desk
+  does not fall back to trading on its own.
+
+Reasoning runs on Claude Haiku 4.5 through OpenRouter; the bulk transcript work runs on a
+cheaper model, because reading video is a volume problem, not a judgment one.
+
+## The risk gates
+
+These are the 21 ceilings. Eleven apply to any order; ten more apply to options. They are
+pure functions with no I/O, which is why they can be — and are — exhaustively unit-tested.
+
+| Gate | What it refuses |
+| --- | --- |
+| `kill_switch` | Anything at all, when the owner has killed the desk |
+| `order_request` | A malformed order (missing limit price, both qty and notional, …) |
+| `symbol_tradable` | A symbol the broker does not list as tradable |
+| `symbol_not_denied` | Anything on the owner's deny-list |
+| `symbol_allowed` | Anything off the owner's allow-list, when one is set |
+| `sufficient_holdings` | Selling more shares than are actually held |
+| `buying_power` | A buy the account cannot fund |
+| `max_notional_per_order` | A single order above the owner's dollar cap |
+| `max_position_pct` | A trade that would push one name past its weight cap |
+| `max_orders_per_day` | The runaway case — more orders in a day than the owner allows |
+| `max_daily_notional` | Too much total money moved in one day |
+| `options_enabled` | Every option order, when options are switched off |
+| `defined_risk_floor` | **Any naked short option, ever** — a short call needs the shares, a short put needs the cash, and the cash figure is the broker's own options buying power, not our estimate |
+| `max_contracts_per_order` | An oversized single option order |
+| `max_contracts_per_underlying` | Stacking too many contracts on one name |
+| `short_call_coverage_pct` | Signing away more of a holding's upside than allowed |
+| `dte_bounds` | An expiry outside the allowed window |
+| `strike_otm` | A strike that is not out of the money |
+| `strike_vs_cost_basis` | A covered call struck below what the shares cost |
+| `delta_ceiling` | A contract more likely to be assigned than allowed |
+| `earnings_proximity` | Writing through an earnings date inside the blackout |
+
+Three properties matter more than the list itself:
+
+- **They fail closed.** If a configured check cannot be evaluated — a missing greek, an
+  unavailable quote — it fails. A safety check is never skipped because its input was
+  inconvenient.
+- **They run twice.** Once when the proposal is made, and again at execution against the
+  live account. An approval authorises the checks to run; it does not skip them.
+- **Their verdicts are kept.** All 21 results, pass and fail, with the numbers that
+  produced them, are stored on the action forever. That is what makes "it obeyed" checkable
+  rather than assertable.
+
+Above all of them sits the **kill switch**, which is the owner's alone and outranks the
+autonomy gate. And in code, the client refuses to construct a live-trading connection at
+all: `live` is not a configuration this build accepts.
+
+## Alpaca infrastructure
+
+The desk uses **both** of Alpaca's agent surfaces, for different jobs:
+
+- **The Alpaca CLI (`alpaca` v0.0.14) is the live execution path.** Every order is placed by
+  shelling out to `alpaca order submit` — dry-run first to validate the request, then for
+  real. The CLI is installed into the deployed image by a dedicated Go build stage. The
+  submitted command string and the broker's JSON reply are both persisted verbatim.
+- **Alpaca's own MCP server runs as a private sidecar.** Thirty-one of its read tools are
+  re-exported to the owner's AI assistant under an `alpaca_` prefix, so he can ask questions
+  of the brokerage in chat. **No write tool is proxied** — the sidecar's trading toolset is
+  switched off, and it has no public port.
+
+Market data (chains, quotes, greeks, the clock) comes from Alpaca's REST API through a typed
+client, because that is the hottest path in the cycle and it should have exactly one
+implementation.
+
+## What the creators add
+
+The desk follows up to three YouTube channels the owner already watches. Each new video's
+transcript is read once, and any falsifiable investment claim in it is extracted as a
+**signal**: the verbatim quote, the ticker, the direction, a horizon, and a condition that
+will make it true or false — then filed in the same prediction ledger the rest of the
+platform uses, so the creator gets scored on it later whether or not the desk agreed.
+
+Today that is 18 signals across three channels. The desk reads the open ones each cycle and
+must say, in one sentence, why it acted on a claim or declined it. A real decline, from the
+record:
+
+> **The Patient Investor**, on QQQ: *"We're like making lower highs over the last three
+> times on QQQ… I think we will most likely retest 630 to 640."*
+>
+> **The desk:** *"Bearish call on QQQ — desk only sells puts, and selling a put here would
+> trade directly against his thesis; also his market-timing record is unproven (0 resolved
+> claims), so there is no graded edge to lean on."*
+
+That is the whole point of the feature: not "the AI listens to influencers", but **a
+creator's opinion enters the system as a claim that can be graded, and the desk has to
+justify itself against it either way.**
+
+## What the record shows so far
+
+The honest headline first: **this is a tiny sample and nothing has been held to expiry
+yet.** No hit rate is being claimed, and the account's equity is still exactly its
+$100,000 starting balance.
+
+What has actually happened, all of it on the record:
+
+- **15 actions** created by the desk. **10 were discarded by a ceiling** before reaching the
+  broker. **1 reached the broker** — a QQQ cash-secured put, submitted through the Alpaca
+  CLI with no human click — and rested until it was cancelled.
+- **4 were refused by Alpaca itself** for insufficient options buying power. Those refusals
+  are the most useful thing that happened all week: they exposed that we were counting
+  short-put collateral per-name while the broker counts it account-wide, and that a
+  cancelled order was still being treated as a live collateral pledge. Both are fixed; the
+  desk now takes the broker's own options-buying-power figure as authoritative and re-checks
+  every resting order at the top of each cycle.
+- **18 signals** extracted from 3 channels, each one filed as a dated, falsifiable claim.
+
+We would rather show a small, legible record than a large, unfalsifiable one.
+
+## What was built this week, and what wasn't
+
+Stated plainly, because it should not be discovered later: **the platform underneath this
+desk is not hackathon work.** The portfolio system, the versioned entity store, the
+prediction ledger and the AI-agent layer have been in development since June. The Alpaca
+module was started before the hackathon and stopped at *proposal* — it could reason and
+compute, and it could not place an order.
+
+Built during the hackathon week:
+
+- The Alpaca **CLI** execution path, and Alpaca's **MCP server** as a private sidecar.
+- The **autonomy gate** and unattended, scheduled trade cycles.
+- **Real-market candidate generation** off the live option chain.
+- The **followed-channel → transcript → signal → graded claim** pipeline, and the desk
+  reasoning over those claims.
+- The **desk view** — the mandate, its proposals, their proof bundles and the scorecards, in
+  one screen.
+- The two correctness fixes the live account forced on us: account-wide collateral, and
+  reconciling resting orders.
+
+## Submission facts
+
+| | |
+| --- | --- |
+| Project | **MANDATE** — the autonomous options desk that can prove it obeyed |
+| Alpaca paper account | `PA3R6NNBYGML` |
+| Environment | Paper only. The client refuses to construct a `live` connection |
+| Instruments | Single-leg options (cash-secured puts, covered calls) and equities |
+| Alpaca surfaces used | Alpaca CLI v0.0.14 (execution) · Alpaca MCP server v2.3.1 (read tools) |
+| Licence | MIT |
+| Author | Samuel Batista |
+
+<Cards>
+  <Card title="Architecture" description="The cycle, the data model, and where the boundary sits" href="/docs/hackathon/architecture" />
+  <Card title="The proof bundle" description="What a single order carries with it, from a real action" href="/docs/hackathon/proof-bundle" />
+</Cards>

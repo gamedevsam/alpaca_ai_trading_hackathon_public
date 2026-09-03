@@ -1,0 +1,11 @@
+# Context filter for Dockerfile.prebuilt ONLY (BuildKit per-Dockerfile ignore).
+# Unlike the main .dockerignore, this ADMITS the host-built .next output — that's the whole
+# point of the prebuilt variant. Everything not needed by its three COPYs is excluded so the
+# context stays small.
+*
+!.next/standalone
+!.next/static
+!public
+!version.json
+# The standalone bundle itself never needs the cache dir.
+.next/standalone/.next/cache

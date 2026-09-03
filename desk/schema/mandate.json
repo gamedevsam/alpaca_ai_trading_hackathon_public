@@ -1,0 +1,68 @@
+{
+  "$id": "entity/alpaca/mandate",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AlpacaMandate",
+  "prefix": "AMN",
+  "type": "object",
+  "required": ["type", "header", "body"],
+  "properties": {
+    "type": { "const": "alpaca_mandate" },
+    "header": {
+      "type": "object",
+      "required": ["owner_user_id", "environment", "status", "promotion_state"],
+      "properties": {
+        "owner_user_id": { "type": "string" },
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "status": { "type": "string", "enum": ["draft", "active", "archived"] },
+        "promotion_state": { "type": "string", "enum": ["sandbox", "promoted_to_live"] }
+      },
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "object",
+      "required": [
+        "environment",
+        "name",
+        "mandate",
+        "provider",
+        "model",
+        "status",
+        "promotionState",
+        "promotedFromMandateId",
+        "optionStrategy"
+      ],
+      "properties": {
+        "environment": { "type": "string", "enum": ["paper", "live"] },
+        "name": { "type": "string" },
+        "mandate": { "type": "string" },
+        "provider": { "type": "string", "enum": ["local", "openrouter", "codex", "claude_code"] },
+        "model": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["draft", "active", "archived"] },
+        "promotionState": { "type": "string", "enum": ["sandbox", "promoted_to_live"] },
+        "promotedFromMandateId": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] },
+        "optionStrategy": {
+          "type": "object",
+          "required": ["targetUnderlyings", "minDaysToExpiry", "maxDaysToExpiry", "requireOtm", "maxAbsDelta"],
+          "properties": {
+            "targetUnderlyings": { "type": "array", "items": { "type": "string" } },
+            "minDaysToExpiry": { "type": ["number", "null"] },
+            "maxDaysToExpiry": { "type": ["number", "null"] },
+            "requireOtm": { "type": "boolean" },
+            "maxAbsDelta": { "type": ["number", "null"] }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "id": { "$ref": "~/entity.json#/properties/id" },
+    "owner_id": { "$ref": "~/entity.json#/properties/owner_id" },
+    "external_id": { "$ref": "~/entity.json#/properties/external_id" },
+    "status": { "$ref": "~/entity.json#/properties/status" },
+    "schema_version": { "$ref": "~/entity.json#/properties/schema_version" },
+    "created_at": { "$ref": "~/entity.json#/properties/created_at" },
+    "updated_at": { "$ref": "~/entity.json#/properties/updated_at" }
+  },
+  "additionalProperties": false
+}

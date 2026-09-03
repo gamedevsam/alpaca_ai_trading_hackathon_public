@@ -1,0 +1,15 @@
+{
+  "title": "Docs",
+  "pages": [
+    "index",
+    "getting-started",
+    "hackathon",
+    "concepts",
+    "sources-and-blend",
+    "predictions",
+    "ai-council",
+    "mcp-assistant",
+    "alpaca-portfolio-manager",
+    "admin-diagnostics"
+  ]
+}

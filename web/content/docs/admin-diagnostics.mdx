@@ -1,0 +1,63 @@
+---
+title: Admin & diagnostics
+description: Check what changed, whether your data is current, and whether the AI is actually connected — without asking anyone.
+---
+
+Automation you can't inspect is automation you shouldn't trust. The **System** section of
+the app exists so you can always answer three questions yourself: _what changed, is my
+data current, and is the AI actually connected?_
+
+## Activity — what changed and who did it
+
+Every consequential action is recorded as an activity event: a source snapshot recorded, a
+blend saved, custodians anchored, a target generated. Each entry says what happened and
+**which surface did it** — you in the app, or your
+[connected AI assistant](/docs/mcp-assistant).
+
+That's the accountability half of letting an assistant do batch work on your behalf: it
+can record thirty things while you're asleep, and you can read exactly what it did in the
+morning.
+
+## What's New
+
+A running log of what's shipped, in plain language, with unseen items counted in the
+header. The product changes often; this is where it tells you how, without a release-notes
+scavenger hunt.
+
+## Data freshness and sync health
+
+Your portfolio sync reports its own status: when it last ran, whether its connection is
+still valid, and a direct path back into settings to refresh it if it's expired.
+
+The same honesty runs through the rest of the product —
+[sources carry their own age](/docs/concepts/sources#freshness-how-old-is-this), and a
+source with no declared publishing cadence is never labeled fresh. Nothing here reports
+health it hasn't verified.
+
+## AI provider connectivity
+
+If you've configured your own AI provider for the [AI Council](/docs/ai-council), the
+settings page shows whether it's actually reachable — a lightweight check by default, plus
+an opt-in deep check that round-trips a real request end-to-end.
+
+So you know _before_ a session whether an answer will come from your model or from the
+clearly-labeled simulated fallback.
+
+## Under the hood
+
+Some tooling is scoped to the workspace owner: a browser over every stored record with its
+full version history, service status, and logs. Most people never need it; when something
+looks wrong, the raw record is there rather than hidden.
+
+The health endpoint at `/api/v1/health` reports database connectivity, required
+configuration, disk space and event-loop health — a fast, honest answer to "is it up" for
+you or an uptime monitor.
+
+<Cards>
+  <Card
+    title="Connect your AI assistant"
+    description="The surface whose writes show up in Activity"
+    href="/docs/mcp-assistant"
+  />
+  <Card title="Concepts & glossary" description="Every term used above, defined" href="/docs/concepts" />
+</Cards>

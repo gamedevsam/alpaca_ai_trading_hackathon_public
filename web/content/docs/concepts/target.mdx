@@ -1,0 +1,62 @@
+---
+title: Target
+description: The portfolio your blend produces — every weight traceable to the sources and rules that put it there.
+---
+
+**A target is the portfolio your [blend](/docs/concepts/blend) produces**: a list of
+holdings and weights, plus a cash reserve, plus the names your rules excluded and why.
+
+It is not a recommendation from a black box. It's the arithmetic result of choices you
+made — which managers you trust, how much, and under what constraints — and every line
+can be opened to see whose conviction put it there and at what weight.
+
+## Explainable by construction
+
+Expand any holding in the target and you see its **provenance**: which sources
+contributed it, how much each contributed, and which rules were applied on the way. A
+name held by three of your sources shows all three.
+
+This matters because the alternative is the thing that makes people distrust automated
+allocation: a number appears, and you have no way to interrogate it. Here, "why does the
+plan hold 9.5% of this?" always has an answer, and the answer is made of your own
+decisions.
+
+The excluded names are shown too, with their reasons in your words — _"no international
+brokerage — permanent exclusion"_, _"cash ballast, not an equity position"_. A plan that
+hides what it dropped isn't explainable.
+
+## Live preview versus saved snapshot
+
+The target has two states, and the app is explicit about which you're looking at:
+
+- **Live** — regenerated from your current blend every time you touch it. Free to
+  experiment with; nothing is stored.
+- **Saved snapshot** — a version you deliberately kept, timestamped and named. This is
+  what you [reconcile](/docs/concepts/reconcile) an account against, so the comparison is
+  against a plan that held still, not one shifting under you while you trade.
+
+## Effective bets: how many bets are you really making?
+
+A book with 28 positions is not necessarily 28 bets. If eight of those names all rise and
+fall with the same underlying story, that's closer to one bet in eight pieces.
+
+**Effective bets** counts your positions after collapsing the names that move together,
+so you can see concentration you'd otherwise miss. Two details are worth knowing:
+
+- The grouping comes from **correlation groups you declare** — your own judgment about
+  what constitutes one bet — not from a statistical correlation the system measured. It
+  reports what you told it, which means you can disagree with it by editing the groups.
+- It's size-weighted, so a large position in a crowded theme moves the number more than a
+  small one.
+
+Seeing "28 names, 23 bets, largest bet 29.8%" tells you something a position count never
+will.
+
+<Cards>
+  <Card title="Reconcile" description="Measuring a real account against this target" href="/docs/concepts/reconcile" />
+  <Card
+    title="The full workflow"
+    description="Sources to blend to target, step by step"
+    href="/docs/sources-and-blend"
+  />
+</Cards>
