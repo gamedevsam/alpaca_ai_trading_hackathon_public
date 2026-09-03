@@ -1,0 +1,196 @@
+/*
+ * The MANDATE cover — one 16:9 still, exported as the submission's cover image.
+ *
+ * Everything is sized in `cqw` against a size container, so the artwork is
+ * resolution-independent: captured at 1920x1080 or previewed at 800px wide it is the
+ * same design, and the export size is a decision made by the camera rather than by
+ * this file. The palette is the deck's dark rendering, declared locally so the cover
+ * exports identically whatever theme the site is in when it is captured.
+ */
+
+.cover {
+  --cover-bg: #09090b;
+  --cover-fg: #fafafa;
+  --cover-muted: #a1a1aa;
+  --cover-faint: #71717a;
+  --cover-line: #27272a;
+  --cover-surface: #141417;
+  --cover-accent: #34d399;
+  --cover-warn: #fbbf24;
+
+  /* Pinned to the viewport rather than sized in `svh`: a headless capture reports an svh
+     a few pixels short of the real viewport, and the frame has to match the camera exactly.
+     `container-type: size` is also what lets the frame below read this box's height. */
+  position: fixed;
+  inset: 0;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--cover-bg);
+}
+
+/* The exported artwork. `container-type: size` is what makes `cqw` resolve against this
+   box rather than the viewport, so the frame can be previewed at any width. */
+.cover-frame {
+  position: relative;
+  container-type: size;
+  aspect-ratio: 16 / 9;
+  /* Fits the window in both axes, so at a 1920x1080 viewport the frame is the viewport. */
+  width: min(100%, calc(100cqh * 16 / 9));
+  max-width: 1920px;
+  overflow: hidden;
+  background: var(--cover-bg);
+  color: var(--cover-fg);
+  font-size: 1cqw;
+}
+
+/* A hairline of the accent along the top edge — the one piece of chrome, and what makes
+   the card read as deliberate rather than as a screenshot at thumbnail size. */
+.cover-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 0.35cqw;
+  background: linear-gradient(90deg, var(--cover-accent), transparent 62%);
+}
+
+/* Identity left, evidence right, one attribution rule across the foot. */
+.cover-inner {
+  position: relative;
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(0, 1fr) 33cqw;
+  grid-template-rows: 1fr auto;
+  column-gap: 5.5cqw;
+  row-gap: 3.6cqw;
+  padding: 5.2cqw 6cqw 4.4cqw;
+}
+
+.cover-identity,
+.cover-proof {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cover-proof {
+  gap: 2.6cqw;
+  border-left: 0.08cqw solid var(--cover-line);
+  padding-left: 4cqw;
+}
+
+.cover-kicker {
+  color: var(--cover-faint);
+  font-size: 1.1cqw;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.cover-wordmark {
+  font-family: var(--font-display), Georgia, serif;
+  margin-top: 1.2cqw;
+  font-size: 9.2cqw;
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.cover-tagline {
+  font-family: var(--font-display), Georgia, serif;
+  margin-top: 1.8cqw;
+  color: var(--cover-muted);
+  font-size: 2.9cqw;
+  font-style: italic;
+  line-height: 1.14;
+  /* Two even lines rather than a long one and an orphan. */
+  text-wrap: balance;
+}
+
+.cover-lead {
+  margin-top: 2.6cqw;
+  max-width: 46cqw;
+  color: var(--cover-muted);
+  font-size: 1.62cqw;
+  line-height: 1.6;
+}
+
+/* The hook: the desk's own refusal, in the desk's own words. */
+.cover-refusal {
+  border: 0.08cqw solid var(--cover-line);
+  border-left: 0.32cqw solid var(--cover-warn);
+  border-radius: 0.5cqw;
+  background: var(--cover-surface);
+  padding: 1.7cqw 1.9cqw;
+}
+
+.cover-refusal-label {
+  color: var(--cover-warn);
+  font-size: 1cqw;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cover-refusal-quote {
+  margin-top: 0.9cqw;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.28cqw;
+  line-height: 1.5;
+}
+
+.cover-figures {
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 1.4cqw;
+  border-top: 0.08cqw solid var(--cover-line);
+  padding: 1.15cqw 0;
+}
+
+.cover-figure:last-child {
+  border-bottom: 0.08cqw solid var(--cover-line);
+}
+
+.cover-figure-value {
+  font-family: var(--font-display), Georgia, serif;
+  min-width: 4.4cqw;
+  font-size: 3.1cqw;
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.cover-figure-label {
+  color: var(--cover-faint);
+  font-size: 1.15cqw;
+  line-height: 1.35;
+}
+
+.cover-footer {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.9cqw 2.4cqw;
+  border-top: 0.08cqw solid var(--cover-line);
+  padding-top: 1.9cqw;
+  color: var(--cover-faint);
+  font-size: 1.2cqw;
+}
+
+.cover-footer strong {
+  color: var(--cover-fg);
+  font-weight: 500;
+}
+
+.cover-footer code {
+  color: var(--cover-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
