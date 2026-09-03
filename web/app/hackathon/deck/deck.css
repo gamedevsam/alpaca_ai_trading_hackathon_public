@@ -1,0 +1,165 @@
+/*
+ * The MANDATE deck. One artifact, two renderings:
+ *   screen — one slide per viewport, scroll-snapped, driven by the arrow keys;
+ *   print  — a 16in x 9in page per slide, which is the submission PDF.
+ *
+ * The palette is declared here rather than reused from the fumadocs `--fd-*` tokens
+ * because print has to be forced light: a dark-mode deck sent to print-to-PDF yields
+ * black pages. Local variables give one place to override for @media print. The values
+ * are the site's own zinc + emerald, so the deck still reads as part of the site.
+ */
+
+.deck {
+  --slide-bg: #ffffff;
+  --slide-fg: #18181b;
+  --slide-muted: #52525b;
+  --slide-faint: #71717a;
+  --slide-line: #e4e4e7;
+  --slide-surface: #fafafa;
+  --slide-accent: #047857;
+  --slide-warn: #b45309;
+
+  height: 100svh;
+  overflow-y: auto;
+  background: var(--slide-bg);
+  color: var(--slide-fg);
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+
+  /* A presented deck should not show its own scrollbar; the counter says where you are. */
+  scrollbar-width: none;
+}
+
+.deck::-webkit-scrollbar {
+  display: none;
+}
+
+.dark .deck {
+  --slide-bg: #09090b;
+  --slide-fg: #fafafa;
+  --slide-muted: #a1a1aa;
+  --slide-faint: #8b8b93;
+  --slide-line: #27272a;
+  --slide-surface: #141417;
+  --slide-accent: #34d399;
+  --slide-warn: #fbbf24;
+}
+
+/* Snapping is only mandatory where a slide reliably fits: on a phone a slide is taller
+   than the viewport, and mandatory snapping there fights the reader's own scroll. */
+@media (min-width: 768px) {
+  .deck {
+    scroll-snap-type: y mandatory;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck {
+    scroll-behavior: auto;
+  }
+}
+
+.deck-slide {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  justify-content: center;
+  scroll-snap-align: start;
+}
+
+.deck-muted {
+  color: var(--slide-muted);
+}
+.deck-faint {
+  color: var(--slide-faint);
+}
+.deck-accent {
+  color: var(--slide-accent);
+}
+.deck-warn {
+  color: var(--slide-warn);
+}
+.deck-rule {
+  border-color: var(--slide-line);
+}
+.deck-surface {
+  background: var(--slide-surface);
+  border: 1px solid var(--slide-line);
+}
+
+/* Screenshots of the live desk. The captures are light whatever the slide is, so in dark mode
+   the frame is what stops a white rectangle reading as a hole punched in the page — hence a
+   border light enough to be visible against BOTH the capture and the near-black slide, plus a
+   little breathing room in the same tone. The shadow is dropped in print, where it only muddies. */
+.deck-shot {
+  display: block;
+  border: 1px solid var(--slide-line);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -24px rgb(0 0 0 / 0.45);
+  overflow: hidden;
+}
+
+.dark .deck-shot {
+  border-color: rgb(255 255 255 / 0.22);
+  background: rgb(255 255 255 / 0.06);
+  padding: 6px;
+}
+
+@media print {
+  @page {
+    size: 16in 9in;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  /* Forced light, and forced to actually render: without print-color-adjust the browser
+     drops every surface tint and the ceiling that failed loses the colour that names it. */
+  .deck {
+    --slide-bg: #ffffff;
+    --slide-fg: #18181b;
+    --slide-muted: #52525b;
+    --slide-faint: #71717a;
+    --slide-line: #e4e4e7;
+    --slide-surface: #fafafa;
+    --slide-accent: #047857;
+    --slide-warn: #b45309;
+
+    height: auto;
+    overflow: visible;
+    scroll-snap-type: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .deck-slide {
+    width: 16in;
+    height: 9in;
+    min-height: 0;
+    overflow: hidden;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  /* Eight slides must be eight pages: a break after the last one would emit a ninth, blank. */
+  .deck-slide:last-child {
+    break-after: auto;
+  }
+
+  /* The page is forced light, so the dark-mode matting must go with it — otherwise printing
+     from dark mode leaves every capture in a grey border on a white page. */
+  .deck-shot,
+  .dark .deck-shot {
+    border-color: #e4e4e7;
+    background: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .deck-chrome {
+    display: none;
+  }
+}
