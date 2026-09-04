@@ -11,9 +11,13 @@ const config = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Emit a self-contained server bundle (.next/standalone) so the Docker runtime
-  // stage can run `node server.js` without the full node_modules tree. See src/web/Dockerfile.
-  output: 'standalone',
+  // Emit a self-contained server bundle (.next/standalone) so the Docker runtime stage can run
+  // `node server.js` without the full node_modules tree. See src/web/Dockerfile.
+  //
+  // Vercel is the exception: it builds its own serverless output from the default `.next` layout and
+  // does not support `standalone`, so asking for it there makes the build succeed and the deployment
+  // fail at output collection. `VERCEL` is set in every Vercel build environment.
+  output: process.env.VERCEL ? undefined : 'standalone',
   // No next/image usage anywhere on this site (the OG route uses ImageResponse — WASM,
   // arch-independent). Disabling the optimizer keeps sharp's platform-specific .node binary
   // out of the runtime path, which is what lets an ARM64 host pre-build the standalone
