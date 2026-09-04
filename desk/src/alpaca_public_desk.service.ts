@@ -31,6 +31,11 @@ import { deskSourceName } from './alpaca_desk_ledger.service';
 import { AlpacaLifecycleService } from './alpaca_lifecycle.service';
 import { AlpacaMandateService } from './alpaca_mandate.service';
 import { AlpacaSignalService, channelSourceName } from './alpaca_signal.service';
+import { tidyTruncatedText } from './alpaca_text';
+
+// The caps the mandate service writes these fields at — reaching one is the signature of a truncation.
+const RATIONALE_CAP_CHARS = 500;
+const DECLINE_REASON_CAP_CHARS = 500;
 
 /** The only environment this surface can ever describe. */
 const DESK_ENVIRONMENT: AlpacaEnvironment = 'paper';
@@ -360,7 +365,7 @@ function projectAction(action: Required<$.AlpacaAction>): PublicDeskAction {
     orderType: body.orderType,
     qty: body.qty,
     limitPrice: body.limitPrice,
-    rationale: body.rationale,
+    rationale: tidyTruncatedText(body.rationale, RATIONALE_CAP_CHARS),
     errorMessage: body.errorMessage,
     clearedLimits: body.clearedLimits,
     events: body.events,
@@ -409,7 +414,11 @@ function describeVerdict(signal: Required<$.AlpacaSignal>): PublicDeskSignal['ve
     return { kind: 'acted', actionId: body.actedActionId };
   }
   if (body.lastDeclineReason) {
-    return { kind: 'declined', reason: body.lastDeclineReason, at: body.lastDeclinedAt ?? null };
+    return {
+      kind: 'declined',
+      reason: tidyTruncatedText(body.lastDeclineReason, DECLINE_REASON_CAP_CHARS),
+      at: body.lastDeclinedAt ?? null,
+    };
   }
   return { kind: 'open' };
 }

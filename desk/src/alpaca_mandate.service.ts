@@ -31,6 +31,7 @@ import { AlpacaClient, AlpacaOptionQuote, AlpacaOptionRight } from './alpaca.typ
 import { AlpacaDeskLedgerService } from './alpaca_desk_ledger.service';
 import { AlpacaLifecycleService } from './alpaca_lifecycle.service';
 import { AlpacaSignalService, OpenSignalBrief } from './alpaca_signal.service';
+import { truncateOnWordBoundary } from './alpaca_text';
 import {
   AlpacaControlLimits,
   OptionDeltaSource,
@@ -92,7 +93,16 @@ const SIGNAL_TASK_SECTION = [
   'For every candidate you select that answers a call, list that call’s `signalId` under `signals` and say in',
   'its `rationale` why the creator’s call survives your own judgment. For every call you pass on, give the',
   'reason under `declined`. Passing on a call is a correct answer; passing on it silently is not.',
+  '',
+  'Keep each `rationale` and each `declined` reason under 60 words — they are shown verbatim and are',
+  'shortened if they run long.',
 ].join('\n');
+
+// Free text the persona writes is shown to a reader as the desk's stated reasoning, so it is capped and
+// cut on a word boundary (alpaca_text.ts) rather than sliced mid-word.
+const RATIONALE_MAX_CHARS = 500;
+const DECLINE_REASON_MAX_CHARS = 500;
+const NARRATIVE_MAX_CHARS = 2000;
 
 // One REAL listed contract the desk could sell today, priced and sized. `id` is the OCC symbol, so a
 // persona selection names an actual contract and a hallucinated id can't resolve to anything.
@@ -137,6 +147,12 @@ export interface MandateDryRunResult {
   openSignals: OpenSignalBrief[];
   /** Calls the agent looked at and passed on, in its own words. A decline is a verdict, not a silence. */
   declinedSignals: Array<{ signalId: string; ticker: string; creator: string; reason: string }>;
+  /**
+   * Candidates the agent selected that produced NO action, and why. A selection that yields neither a
+   * proposed nor a discarded action is the silent drop the ledger exists to prevent, so the gap between
+   * `selected` and `actions` is always accounted for here rather than left for a reader to notice.
+   */
+  skipped: Array<{ candidateId: string; reason: string }>;
 }
 
 export interface MandateOptionStrategyInput {
@@ -270,6 +286,7 @@ export class AlpacaMandateService {
         provider: 'local',
         narrative: 'Options trading is disabled in the Alpaca control limits — enable it before running a dry-run.',
         actions: [],
+        skipped: [],
         openSignals: [],
         declinedSignals: [],
       };
@@ -368,20 +385,29 @@ export class AlpacaMandateService {
           MIN_PREMIUM_PER_SHARE.toFixed(2) +
           ' with the cash/shares on hand. Check the target underlyings, the bounds, and whether the market is open.',
         actions: [],
+        skipped: [],
         openSignals,
         declinedSignals: [],
       };
     }
 
-    const { selected, usedAi, provider, narrative, rationaleById, signalIdsByCandidate, declinedSignals } =
-      await this.choosePersonaCandidates(
-        userId,
-        mandate,
-        candidates,
-        openSignals,
-        uncommittedCash,
-        account.account.equity,
-      );
+    const {
+      selected,
+      unknownSelections,
+      usedAi,
+      provider,
+      narrative,
+      rationaleById,
+      signalIdsByCandidate,
+      declinedSignals,
+    } = await this.choosePersonaCandidates(
+      userId,
+      mandate,
+      candidates,
+      openSignals,
+      uncommittedCash,
+      account.account.equity,
+    );
 
     // Collateral is committed as we go: two selected CSPs can't both pledge the same cash, and two covered
     // calls can't both pledge the same shares. Starting from `uncommittedCash` extends that across cycles
@@ -395,16 +421,24 @@ export class AlpacaMandateService {
     }
 
     const actions: Array<Required<$.AlpacaAction>> = [];
+    const skipped: MandateDryRunResult['skipped'] = unknownSelections.map((candidateId) => ({
+      candidateId,
+      reason: 'Not a contract the agent was shown — the id matched no candidate on today\u2019s chain.',
+    }));
     for (const candidateId of selected) {
       const candidate = candidates.find((c) => c.id === candidateId);
       if (!candidate) {
-        continue; // A hallucinated id that isn't in the candidate list is silently dropped, never proposed.
+        // Unreachable: `selected` is already filtered to real candidate ids, and an invented id is
+        // recorded in `skipped` above. Kept so a future change to that filter cannot start proposing
+        // against a contract that does not exist.
+        skipped.push({ candidateId, reason: 'No candidate on today\u2019s chain matched this id.' });
+        continue;
       }
       const contracts = affordableContracts(candidate, cashRemaining, sharesRemaining);
       if (contracts < 1) {
-        this.logger.log(
-          `Alpaca mandate ${mandate.id} dry-run: ${candidate.occSymbol} skipped — collateral already committed to an earlier proposal this cycle.`,
-        );
+        const reason = 'Collateral was already committed to an earlier proposal in this cycle.';
+        this.logger.log(`Alpaca mandate ${mandate.id} dry-run: ${candidate.occSymbol} skipped \u2014 ${reason}`);
+        skipped.push({ candidateId, reason });
         continue;
       }
       if (candidate.strategy === 'cash_secured_put') {
@@ -463,8 +497,8 @@ export class AlpacaMandateService {
 
     this.logger.log(
       `Alpaca mandate ${mandate.id} dry-run: ${candidates.length} candidate(s), ${selected.length} selected, ` +
-        `${actions.length} action(s) proposed/discarded, ${openSignals.length} open creator call(s) weighed ` +
-        `(${declinedSignals.length} declined).`,
+        `${actions.length} action(s) proposed/discarded, ${skipped.length} selection(s) skipped, ` +
+        `${openSignals.length} open creator call(s) weighed (${declinedSignals.length} declined).`,
     );
 
     return {
@@ -475,6 +509,7 @@ export class AlpacaMandateService {
       provider,
       narrative,
       actions,
+      skipped,
       openSignals,
       declinedSignals,
     };
@@ -497,6 +532,7 @@ export class AlpacaMandateService {
     equity: number,
   ): Promise<{
     selected: string[];
+    unknownSelections: string[];
     usedAi: boolean;
     provider: string;
     narrative: string | null;
@@ -522,8 +558,11 @@ export class AlpacaMandateService {
         'collateral it ties up until expiry. `cash` is what is actually free to pledge today — collateral ' +
         'already reserved by open short puts has been deducted. Decide which — if any — to sell today.',
       SIGNAL_TASK_SECTION,
-      'Reply with ONLY JSON: {"select": ["<candidateId>", ...], "rationale": {"<candidateId>": "<why>"}, ' +
+      'Reply with ONLY JSON: {"narrative": "<summary>", "select": ["<candidateId>", ...], ' +
+        '"rationale": {"<candidateId>": "<why>"}, ' +
         '"signals": {"<candidateId>": ["<signalId>", ...]}, "declined": {"<signalId>": "<why not>"}}. ' +
+        '`narrative` is two or three sentences of plain prose summarising today\u2019s decision for a human ' +
+        'reader \u2014 no JSON, no markdown, no bullet list. ' +
         "The candidateId is the contract's OCC symbol; only use ids from the lists above, never invent one.",
     ].join('\n\n');
     const payload = JSON.stringify({ cash: round2(uncommittedCash), equity: round2(equity), openSignals, candidates });
@@ -550,9 +589,10 @@ export class AlpacaMandateService {
         }
         return {
           selected: parsed.selected,
+          unknownSelections: parsed.unknownSelections,
           usedAi: true,
           provider: result.provider,
-          narrative: result.text.trim().slice(0, 2000) || null,
+          narrative: parsed.narrative,
           rationaleById: parsed.rationaleById,
           signalIdsByCandidate: parsed.signalIdsByCandidate,
           declinedSignals: parsed.declinedSignals,
@@ -565,6 +605,8 @@ export class AlpacaMandateService {
 
     return {
       selected: candidates.map((c) => c.id),
+      // The fallback only ever names contracts it just built, so it can invent nothing.
+      unknownSelections: [],
       usedAi: false,
       provider: 'local',
       narrative:
@@ -859,7 +901,9 @@ function parsePersonaSelection(
   candidates: OptionMandateCandidate[],
   openSignals: OpenSignalBrief[],
 ): {
+  narrative: string | null;
   selected: string[];
+  unknownSelections: string[];
   rationaleById: Map<string, string>;
   signalIdsByCandidate: Map<string, string[]>;
   declinedSignals: MandateDryRunResult['declinedSignals'];
@@ -874,6 +918,7 @@ function parsePersonaSelection(
       return null;
     }
     const parsed = JSON.parse(jsonMatch[0]) as {
+      narrative?: unknown;
       select?: unknown;
       rationale?: Record<string, unknown>;
       signals?: Record<string, unknown>;
@@ -882,12 +927,17 @@ function parsePersonaSelection(
     if (!Array.isArray(parsed.select)) {
       return null;
     }
-    const selected = parsed.select.filter((id): id is string => typeof id === 'string' && validIds.has(id));
+    const named = parsed.select.filter((id): id is string => typeof id === 'string');
+    const selected = named.filter((id) => validIds.has(id));
+    // An id the agent named that is not a contract it was shown. It is never proposed — but it is
+    // handed back rather than quietly filtered, because an invented pick is exactly what a reader
+    // needs to see, and nothing else in the result would reveal it.
+    const unknownSelections = named.filter((id) => !validIds.has(id));
     const rationaleById = new Map<string, string>();
     if (parsed.rationale && typeof parsed.rationale === 'object') {
       for (const [id, value] of Object.entries(parsed.rationale)) {
         if (validIds.has(id) && typeof value === 'string') {
-          rationaleById.set(id, value.slice(0, 500));
+          rationaleById.set(id, truncateOnWordBoundary(value, RATIONALE_MAX_CHARS));
         }
       }
     }
@@ -925,13 +975,28 @@ function parsePersonaSelection(
             signalId,
             ticker: brief.ticker,
             creator: brief.creator,
-            reason: reason.trim().slice(0, 500),
+            reason: truncateOnWordBoundary(reason, DECLINE_REASON_MAX_CHARS),
           });
         }
       }
     }
 
-    return { selected, rationaleById, signalIdsByCandidate, declinedSignals, droppedCitations };
+    // Prose for a human, asked for in the same reply rather than a second call. Absent or blank leaves
+    // the field null: showing nothing beats showing the model\u2019s raw JSON as if it were a summary.
+    const narrative =
+      typeof parsed.narrative === 'string' && parsed.narrative.trim()
+        ? truncateOnWordBoundary(parsed.narrative, NARRATIVE_MAX_CHARS)
+        : null;
+
+    return {
+      narrative,
+      selected,
+      unknownSelections,
+      rationaleById,
+      signalIdsByCandidate,
+      declinedSignals,
+      droppedCitations,
+    };
   } catch {
     return null;
   }

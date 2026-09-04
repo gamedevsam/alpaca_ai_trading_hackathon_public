@@ -82,6 +82,21 @@ function listedContract(options: {
   };
 }
 
+// A plausible AAPL put chain at one listed Friday expiry, spot $150.
+function makePutChain(expiration: string): AlpacaOptionQuote[] {
+  return [
+    // The at-the-money strike every real chain lists — how the desk discovers that this expiry exists.
+    // It is never itself a candidate here: not OTM, and its delta is far outside the band.
+    listedContract({ underlying: 'AAPL', expiration, right: 'put', strike: 150, bid: 3.6, delta: -0.5 }),
+    listedContract({ underlying: 'AAPL', expiration, right: 'put', strike: 145, bid: 1.8, delta: -0.24 }),
+    listedContract({ underlying: 'AAPL', expiration, right: 'put', strike: 140, bid: 0.9, delta: -0.14 }),
+    // Too far out to pay for itself — below the premium floor.
+    listedContract({ underlying: 'AAPL', expiration, right: 'put', strike: 120, bid: 0.03, delta: -0.01 }),
+    // Rich, but far too likely to be assigned.
+    listedContract({ underlying: 'AAPL', expiration, right: 'put', strike: 149, bid: 4.1, delta: -0.47 }),
+  ];
+}
+
 function makeMandate(overrides: Partial<$.AlpacaMandate['body']> = {}): Required<$.AlpacaMandate> {
   const now = new Date().toISOString();
   return {
@@ -305,18 +320,7 @@ describe('AlpacaMandateService.create', () => {
 
 describe('AlpacaMandateService.dryRun', () => {
   const friday = nextFriday(10);
-  // A plausible AAPL put chain at one listed Friday expiry, spot $150.
-  const putChain = [
-    // The at-the-money strike every real chain lists — how the desk discovers that this expiry exists.
-    // It is never itself a candidate here: not OTM, and its delta is far outside the band.
-    listedContract({ underlying: 'AAPL', expiration: friday, right: 'put', strike: 150, bid: 3.6, delta: -0.5 }),
-    listedContract({ underlying: 'AAPL', expiration: friday, right: 'put', strike: 145, bid: 1.8, delta: -0.24 }),
-    listedContract({ underlying: 'AAPL', expiration: friday, right: 'put', strike: 140, bid: 0.9, delta: -0.14 }),
-    // Too far out to pay for itself — below the premium floor.
-    listedContract({ underlying: 'AAPL', expiration: friday, right: 'put', strike: 120, bid: 0.03, delta: -0.01 }),
-    // Rich, but far too likely to be assigned.
-    listedContract({ underlying: 'AAPL', expiration: friday, right: 'put', strike: 149, bid: 4.1, delta: -0.47 }),
-  ];
+  const putChain = makePutChain(friday);
   const callChain = [
     listedContract({ underlying: 'AAPL', expiration: friday, right: 'call', strike: 150, bid: 3.7, delta: 0.51 }),
     listedContract({ underlying: 'AAPL', expiration: friday, right: 'call', strike: 157, bid: 1.55, delta: 0.26 }),
@@ -591,6 +595,142 @@ describe('AlpacaMandateService.dryRun', () => {
     expect(result.candidates).toEqual([]);
     expect(result.actions).toEqual([]);
     expect(result.narrative).toMatch(/No eligible/i);
+  });
+});
+
+// ── The desk's stated reasoning is what a reader judges it by, so it has to survive the trip intact ──
+describe('AlpacaMandateService.dryRun — the reasoning a reader sees', () => {
+  const friday = nextFriday(10);
+  const putChain = makePutChain(friday);
+
+  function personaReply(text: string) {
+    return jest.fn(async () => ({ usedAi: true, provider: 'openrouter', model: 'test-model', text }));
+  }
+
+  it('ends an over-long rationale on a word boundary with an ellipsis, never mid-word', async () => {
+    const { lifecycle, proposeAction } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const chosen = buildOccSymbol('AAPL', friday, 'put', 145);
+    // 600+ characters of whole words, so the cap lands in the middle of one.
+    const long = `${'premium harvesting discipline '.repeat(24)}unusually`;
+    const complete = personaReply(JSON.stringify({ select: [chosen], rationale: { [chosen]: long } }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    await service.dryRun(USER, mandate.id);
+
+    const stored: string = proposeAction.mock.calls[0][1].rationale;
+    expect(stored.length).toBeLessThanOrEqual(500);
+    expect(stored.endsWith('\u2026')).toBe(true);
+    // The character before the ellipsis ends a whole word — the defect was a hard slice mid-word.
+    expect(stored.slice(0, -1)).toMatch(/\w$/);
+    expect(long.startsWith(stored.slice(0, -1))).toBe(true);
+  });
+
+  it('leaves a rationale that already fits completely alone', async () => {
+    const { lifecycle, proposeAction } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const chosen = buildOccSymbol('AAPL', friday, 'put', 145);
+    const complete = personaReply(
+      JSON.stringify({ select: [chosen], rationale: { [chosen]: 'Strong conviction, harvest premium.' } }),
+    );
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    await service.dryRun(USER, mandate.id);
+
+    expect(proposeAction.mock.calls[0][1].rationale).toBe('Strong conviction, harvest premium.');
+  });
+
+  it('takes the narrative from the reply\u2019s own prose field, not the raw JSON', async () => {
+    const { lifecycle } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const chosen = buildOccSymbol('AAPL', friday, 'put', 145);
+    const complete = personaReply(JSON.stringify({ narrative: 'Sold one put into a calm tape.', select: [chosen] }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    const result = await service.dryRun(USER, mandate.id);
+
+    expect(result.narrative).toBe('Sold one put into a calm tape.');
+  });
+
+  it('leaves the narrative null rather than showing the model\u2019s raw JSON when it omits one', async () => {
+    const { lifecycle } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const chosen = buildOccSymbol('AAPL', friday, 'put', 145);
+    const complete = personaReply(JSON.stringify({ select: [chosen] }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    const result = await service.dryRun(USER, mandate.id);
+
+    expect(result.narrative).toBeNull();
+  });
+});
+
+// A selection that produces neither a proposed nor a discarded action is the silent drop the ledger
+// exists to prevent — the gap between `selected` and `actions` is always accounted for.
+describe('AlpacaMandateService.dryRun — every selection is accounted for', () => {
+  const friday = nextFriday(10);
+  const putChain = makePutChain(friday);
+
+  it('records the selection it could not fund, with the reason', async () => {
+    // $20k of cash covers exactly one $145 contract — the second selection has nothing left to pledge.
+    const { lifecycle, proposeAction } = makeFakeLifecycle({
+      chain: putChain,
+      lastPrice: 150,
+      account: { cash: 20_000 },
+    });
+    const mandate = makeMandate();
+    const unfunded = buildOccSymbol('AAPL', friday, 'put', 140);
+    const complete = jest.fn(async () => ({
+      usedAi: true,
+      provider: 'openrouter',
+      model: 'test-model',
+      text: JSON.stringify({ select: [buildOccSymbol('AAPL', friday, 'put', 145), unfunded] }),
+    }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    const result = await service.dryRun(USER, mandate.id);
+
+    expect(proposeAction).toHaveBeenCalledTimes(1);
+    expect(result.skipped).toEqual([{ candidateId: unfunded, reason: expect.stringMatching(/collateral/i) }]);
+    // Nothing selected is unexplained: every id is either an action or a recorded skip.
+    expect(result.actions.length + result.skipped.length).toBe(result.selected.length);
+  });
+
+  it('records an id the agent invented, which no other field would reveal', async () => {
+    const { lifecycle, proposeAction } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const chosen = buildOccSymbol('AAPL', friday, 'put', 145);
+    const complete = jest.fn(async () => ({
+      usedAi: true,
+      provider: 'openrouter',
+      model: 'test-model',
+      text: JSON.stringify({ select: [chosen, 'AAPL999999P00999000'] }),
+    }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    const result = await service.dryRun(USER, mandate.id);
+
+    expect(proposeAction).toHaveBeenCalledTimes(1);
+    expect(result.selected).toEqual([chosen]); // never proposed
+    expect(result.skipped).toEqual([
+      { candidateId: 'AAPL999999P00999000', reason: expect.stringMatching(/was shown|matched no candidate/i) },
+    ]);
+  });
+
+  it('reports no skips on a clean cycle', async () => {
+    const { lifecycle } = makeFakeLifecycle({ chain: putChain, lastPrice: 150 });
+    const mandate = makeMandate();
+    const complete = jest.fn(async () => ({
+      usedAi: true,
+      provider: 'openrouter',
+      model: 'test-model',
+      text: JSON.stringify({ select: [buildOccSymbol('AAPL', friday, 'put', 145)] }),
+    }));
+    const { service } = makeService(lifecycle, makeFakeForumInference(complete), [mandate]);
+
+    const result = await service.dryRun(USER, mandate.id);
+
+    expect(result.skipped).toEqual([]);
   });
 });
 

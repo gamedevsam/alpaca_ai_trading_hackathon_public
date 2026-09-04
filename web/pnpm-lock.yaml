@@ -5,7 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  typescript@7.0.2: 835724558cdc10bbbde0088b3efc49e75dd1f76fa5b055cadf07a3e125067eaf
+  typescript@7.0.2:
+    hash: 835724558cdc10bbbde0088b3efc49e75dd1f76fa5b055cadf07a3e125067eaf
+    path: patches/typescript@7.0.2.patch
 
 importers:
   .:
